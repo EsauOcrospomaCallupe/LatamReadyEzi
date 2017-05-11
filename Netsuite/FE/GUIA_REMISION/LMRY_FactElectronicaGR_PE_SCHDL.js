@@ -19,7 +19,7 @@ var PASSWORD = 	nlapiGetContext().getSetting('SCRIPT', 'custscript_lmry_password
 
 var URL_WS   = 'http://test.comfiar.com.ec/tcomfiarws/';
 var USER     = 'WSLatamready';
-var PASSWORD = 'Eia';
+var PASSWORD = '';
 */
 var URL_WS   = '';
 var USER     = '';
@@ -213,7 +213,7 @@ function lmry_fact_electronica_schdl(type) {
 					//Datos de Llegada
 					var ubigeoLlegada	=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[24]);
 					var dirLlegada     	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[25]);
-					dirLlegada='Av. Manuel Maricon 543';
+					dirLlegada='Av. Manuel Olguin 543';
 						//dirLlegada      =   dirLlegada.replace(/\r\n/gi, " ");
 					var numContenedor   =   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[26]);
 
@@ -221,7 +221,7 @@ function lmry_fact_electronica_schdl(type) {
 					//Datos de Partida
 					var ubigeoPartida   =	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[27]);
 					var dirPartida     	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[28]);
-					dirPartida='Av. Pedro negris 69';
+					dirPartida='Av. Juan Alfaro 170';
 						//dirPartida      =   dirPartida.replace(/\r\n/gi, " ");
 					//var codPuerto		=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[37]);
 					
@@ -627,8 +627,10 @@ function WSSalidaTransac(){
 
 	var returnSalidaTransac	= objSalidaTransac.getBody();
 		returnSalidaTransac = replaceXML(returnSalidaTransac);
+		nlapiLogExecution('ERROR','SalidaTransac',returnSalidaTransac);
 
 	var estado = returnSalidaTransac.split('estado')[1];
+	nlapiLogExecution('ERROR','Estado',estado);
 		estado = estado.substring(1, estado.length-2);
 	if(estado != null && estado != ''){
 		if (estado == 'AUTORIZADO') {
