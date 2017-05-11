@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<DespatchAdvice xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:qdt="urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:sac="urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1" xmlns:udt="urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:ccts="urn:un:unece:uncefact:documentation:2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns="urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2">
+  <ext:UBLExtensions>
+    <ext:UBLExtension>
+      <ext:ExtensionContent></ext:ExtensionContent>
+    </ext:UBLExtension>
+  </ext:UBLExtensions>
+  <!--Version UBL-->
+  <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+  <cbc:CustomizationID>1.0</cbc:CustomizationID>
+  <!--Serie y NumPreimpreso-->
+  <cbc:ID>T001-00000166</cbc:ID>
+  <!-- Fecha emision-->
+  <cbc:IssueDate>2016-12-02</cbc:IssueDate>
+  <!-- Tipo de Doc(guia)-->
+  <cbc:DespatchAdviceTypeCode>09</cbc:DespatchAdviceTypeCode>
+  <!-- Observaciones-->
+  <cbc:Note>Transporto bolsas para basura</cbc:Note>
+  <!-- Guia de Remision Dado de baja-->
+  <cac:OrderReference>
+    <!-- Numero de doc -->
+    <cbc:ID>T001-8</cbc:ID>
+    <!-- Codigo del tipo de doc - Tipo de doc-->
+    <cbc:OrderTypeCode name="Guía de Remisión">09</cbc:OrderTypeCode>
+  </cac:OrderReference>
+  <cac:AdditionalDocumentReference>
+    <!-- NUmero de doc-->
+    <cbc:ID>T001-8</cbc:ID>
+    <!-- Codigo del tipo de doc-->
+    <cbc:DocumentTypeCode>06</cbc:DocumentTypeCode>
+  </cac:AdditionalDocumentReference>
+  <!-- Datos del remitente-->
+  <cac:DespatchSupplierParty>
+    <!-- Tipo y NUmero de doc de indentidad pes-->
+    <cbc:CustomerAssignedAccountID schemeID="6">20100066603</cbc:CustomerAssignedAccountID>
+    <cac:Party>
+      <cac:PartyLegalEntity>
+        <!-- Nombre pes-->
+        <cbc:RegistrationName>PERUQUIMICOS S.A.C.</cbc:RegistrationName>
+      </cac:PartyLegalEntity>
+    </cac:Party>
+  </cac:DespatchSupplierParty>
+  <!-- Del que recibe pes-->
+  <cac:DeliveryCustomerParty>
+    <cbc:CustomerAssignedAccountID schemeID="6">10209865209</cbc:CustomerAssignedAccountID>
+    <cac:Party>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>RODRIGUEZ ROQUE AQUILES RUFO</cbc:RegistrationName>
+      </cac:PartyLegalEntity>
+    </cac:Party>
+  </cac:DeliveryCustomerParty>
+  <!-- Del tercero pes-->
+  <cac:SellerSupplierParty>
+    <cbc:CustomerAssignedAccountID schemeID="6">20100070970</cbc:CustomerAssignedAccountID>
+    <cac:Party>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>PLAZA VEA</cbc:RegistrationName>
+      </cac:PartyLegalEntity>
+    </cac:Party>
+  </cac:SellerSupplierParty>
+  <!-- Datos del envio-->
+  <cac:Shipment>
+    <cbc:ID>1</cbc:ID>
+    <!-- Codigo del tipo de envio-->
+    <cbc:HandlingCode>01</cbc:HandlingCode>
+    <!-- Descripcion del tipo de envio-->
+    <cbc:Information>VENTA</cbc:Information>
+    <!-- Unidad de Medida - Peso bruto-->
+    <cbc:GrossWeightMeasure unitCode="KGM">10000.00</cbc:GrossWeightMeasure>
+    <!--NUmero de bultos -->
+    <cbc:TotalTransportHandlingUnitQuantity>5</cbc:TotalTransportHandlingUnitQuantity>
+    <!-- Indicador de motivo de traslado-->
+    <cbc:SplitConsignmentIndicator>true</cbc:SplitConsignmentIndicator>
+    <cac:ShipmentStage>
+      <!--Modalidad de traslado -->
+      <cbc:TransportModeCode>02</cbc:TransportModeCode>
+      <cac:TransitPeriod>
+        <!-- Fecha de inicio del traslado-->
+        <cbc:StartDate>2016-07-01</cbc:StartDate>
+      </cac:TransitPeriod>
+      <!-- Datos del transportista el UBER pes xd-->
+      <cac:CarrierParty>
+        <cac:PartyIdentification>
+          <!-- tipo y num de doc-->
+          <cbc:ID schemeID="6">10209865209</cbc:ID>
+        </cac:PartyIdentification>
+        <cac:PartyName>
+          <!-- Apellidos nombre, razon social etc esas was-->
+          <cbc:Name>PERUQUIMICOS S.A.C.</cbc:Name>
+        </cac:PartyName>
+      </cac:CarrierParty>
+      <cac:TransportMeans>
+        <cac:RoadTransport>
+          <!-- So plaqueta-->
+          <cbc:LicensePlateID>PGY-0988</cbc:LicensePlateID>
+        </cac:RoadTransport>
+      </cac:TransportMeans>
+      <cac:DriverPerson>
+        <!-- tipo y num de doc-->
+        <cbc:ID schemeID="1">10101010</cbc:ID>
+      </cac:DriverPerson>
+    </cac:ShipmentStage>
+    <!-- Punto de llegada-->
+    <cac:Delivery>
+      <cac:DeliveryAddress>
+        <!--ubigeo -->
+        <cbc:ID>120606</cbc:ID>
+        <!-- Direccion del punto llegada-->
+        <cbc:StreetName>JR. MANTARO NRO. 257</cbc:StreetName>
+      </cac:DeliveryAddress>
+    </cac:Delivery>
+    <!-- Datos del contenedor ,,, Numero de precinto-->
+    <cac:TransportHandlingUnit>
+      <!--Numero del contenedor -->
+      <cbc:ID>120606</cbc:ID>
+      <!--Otros vehiculos -->
+      <cac:TransportEquipment>
+        <cbc:ID>PGY-645</cbc:ID>
+      </cac:TransportEquipment>
+      <cac:TransportEquipment>
+        <cbc:ID>PGY-645</cbc:ID>
+      </cac:TransportEquipment>
+    </cac:TransportHandlingUnit>
+    <!-- Punto de partida-->
+    <cac:OriginAddress>
+      <!-- ubigeo-->
+      <cbc:ID>150123</cbc:ID>
+      <!-- Direccion-->
+      <cbc:StreetName>CAR. PANAM SUR KM 25 NO. 25050 NRO. 050 Z.I. CONCHAN</cbc:StreetName>
+    </cac:OriginAddress>
+    <!--Codigo del puerto o aeropuerto de embarque/desembarque -->
+    <cac:FirstArrivalPortLocation>
+      <cbc:ID>PAI</cbc:ID>
+    </cac:FirstArrivalPortLocation>
+  </cac:Shipment>
+  <!-- Datos del item de la GR-->
+  <cac:DespatchLine>
+    <!-- correlativo-->
+    <cbc:ID>1</cbc:ID>
+    <!--Unidad de medida y cantidad del item -->
+    <cbc:DeliveredQuantity unitCode="KGM">10</cbc:DeliveredQuantity>
+    <cac:OrderLineReference>
+    <!-- Dato repetido del item-->
+      <cbc:LineID>1</cbc:LineID>
+    </cac:OrderLineReference>
+    <cac:Item>
+      <cbc:Name>ACETONA - 500.50 BALDE - 500.50 BALAS</cbc:Name>
+      <cac:SellersItemIdentification>
+        <!--Codigo del item -->
+        <cbc:ID>COD1</cbc:ID>
+      </cac:SellersItemIdentification>
+    </cac:Item>
+  </cac:DespatchLine>
+</DespatchAdvice>
