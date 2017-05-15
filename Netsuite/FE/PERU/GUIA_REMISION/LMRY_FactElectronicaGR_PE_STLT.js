@@ -104,7 +104,7 @@ function suiteletFactElectMasiva(request, response){
 		// Crea el formulario
 		response.writePage(form);
 	}else{
-		nlapiLogExecution('ERROR','Holi','Entro');
+		
 		var params = new Array();
 		var featuresubs = nlapiGetContext().getFeature('SUBSIDIARIES');
 		if (featuresubs == true || featuresubs == 'T'){

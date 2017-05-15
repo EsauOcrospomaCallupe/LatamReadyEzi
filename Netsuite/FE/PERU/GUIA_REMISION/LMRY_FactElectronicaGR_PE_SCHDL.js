@@ -152,11 +152,13 @@ function lmry_fact_electronica_schdl(type) {
 					nlapiLogExecution('ERROR', 'puntoDeVentaId', puntoDeVentaId);
 					
 					var secuencial    	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[2]);
-						nroCbte 		= 	secuencial;
+					nlapiLogExecution('ERROR','secuencial',secuencial);
+						nroCbte 		= 	secuencial; 	
 
 					
 
 					var fechaEmision	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[3]);
+					nlapiLogExecution('ERROR','fechaEmision',fechaEmision);
 						fechaEmision    =	FormatoDDMMYYY(fechaEmision);
 				  
 				   // nlapiLogExecution('ERROR', 'tipodeGuia', tipodeGuia);	
@@ -174,10 +176,12 @@ function lmry_fact_electronica_schdl(type) {
 				    
 				    //REmitente
 				    var remiTipoDoc		=  	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[8]);
+				    nlapiLogExecution('ERROR','REMI TIPO DOC',remiTipoDoc);
 				    var remiNumDoc		=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[9]);
 				    	remiNumDoc = '20536105523';
 				    	cuitId 			= 	remiNumDoc;
 				    var remiRazonSocial =	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[10]);
+				    nlapiLogExecution('ERROR','REMI RAZON SOCIAL',remiRazonSocial);
 					
 					//Asigna secuencial y nroCbte
 					var returnUltimoNroCbte = WSUltimoNroCbte();
@@ -189,12 +193,14 @@ function lmry_fact_electronica_schdl(type) {
 				    //
 				    var codMotivo  		=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[14]);
 				    var motivo 			=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[15]);
+				    nlapiLogExecution('ERROR','MOTIVO',motivo);
 				    
 				    var peso  			=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[16]);
 				    var cantidad 		=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[17]);
 				    //var modTraslado		=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[23]);
 				    var modTraslado 	= 	'01';
 				    var fechaIniTrans	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[18]);
+				    nlapiLogExecution('ERROR','FECHA INICIO',fechaIniTrans);
 						fechaIniTrans   =	FormatoDDMMYYY(fechaIniTrans);
 
 					//Datos Transportista
