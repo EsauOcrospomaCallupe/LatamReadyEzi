@@ -141,32 +141,24 @@ function lmry_fact_electronica_schdl(type) {
 										
 					//Serie CXC 3 primeros dig = estab y los 3 siguientes = ptoEmi
 					var serieCXC        =	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[1]);
-						 serieCXC = 'F001';
+						 
 					nlapiLogExecution('ERROR', 'serieCXC', serieCXC);
 					if (serieCXC != null && serieCXC != '') {
-						var estab        = 	serieCXC.substring(0,3);
-						var ptoEmi       =	serieCXC.substring(4,7);
-						//puntoDeVentaId	 =  parseInt(estab + ptoEmi, 10).toString();
-						puntoDeVentaId = '1001';
+						
+						//puntoDeVentaId = nlapiLookupField('customrecord_lmry_pe_pto_vta_ws',serieCXC,'custrecord_lmry_pe_pto_vta');
+						if(serieCXC=='T001'){
+							puntoDeVentaId = '1000';
+						}
 					}
 					nlapiLogExecution('ERROR', 'puntoDeVentaId', puntoDeVentaId);
 					
 					var secuencial    	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[2]);
-					nlapiLogExecution('ERROR','secuencial',secuencial);
 						nroCbte 		= 	secuencial; 	
 
-					
-
 					var fechaEmision	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[3]);
-					nlapiLogExecution('ERROR','fechaEmision',fechaEmision);
 						fechaEmision    =	FormatoDDMMYYY(fechaEmision);
-				  
-				   // nlapiLogExecution('ERROR', 'tipodeGuia', tipodeGuia);	
 
 				    var observaciones   =   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[4]);
-				    nlapiLogExecution('ERROR','OBS',observaciones)
-				   
-
 				    
 				    var numDocGuiaBaja  =   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[5]);
 				    var codDoc          =	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[6]);
@@ -175,13 +167,11 @@ function lmry_fact_electronica_schdl(type) {
 					var tipodeGuiaDoc	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[7]);
 				    
 				    //REmitente
-				    var remiTipoDoc		=  	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[8]);
-				    nlapiLogExecution('ERROR','REMI TIPO DOC',remiTipoDoc);
+				    var remiTipoDoc		=  	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[8]);				   
 				    var remiNumDoc		=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[9]);
 				    	remiNumDoc = '20536105523';
 				    	cuitId 			= 	remiNumDoc;
 				    var remiRazonSocial =	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[10]);
-				    nlapiLogExecution('ERROR','REMI RAZON SOCIAL',remiRazonSocial);
 					
 					//Asigna secuencial y nroCbte
 					var returnUltimoNroCbte = WSUltimoNroCbte();
@@ -190,27 +180,22 @@ function lmry_fact_electronica_schdl(type) {
 				    var destTipoDoc		=  	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[11]);
 				    var destNumDoc		=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[12]);
 				    var destRazonSocial =	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[13]);
-				    //
 				    var codMotivo  		=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[14]);
-				    var motivo 			=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[15]);
-				    nlapiLogExecution('ERROR','MOTIVO',motivo);
-				    
+				    var motivo 			=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[15]);			    
 				    var peso  			=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[16]);
 				    var cantidad 		=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[17]);
 				    //var modTraslado		=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[23]);
 				    var modTraslado 	= 	'01';
-				    var fechaIniTrans	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[18]);
-				    nlapiLogExecution('ERROR','FECHA INICIO',fechaIniTrans);
+				    var fechaIniTrans	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[18]);				    
 						fechaIniTrans   =	FormatoDDMMYYY(fechaIniTrans);
 
-					//Datos Transportista
-					
+					//Datos Transportista					
 					var rucTranspo  	=  	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[19]);
 					var razonSoTranspo  =  	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[20]);
 					if (razonSoTranspo != null && razonSoTranspo != '') {
 						var lengthPrefijo = razonSoTranspo.split(' ')[0].length + 1;
 						razonSoTranspo   = razonSoTranspo.substring(lengthPrefijo, razonSoTranspo.length);
-						nlapiLogExecution('ERROR', 'lengthPrefijo', lengthPrefijo);
+						
 					}
 					var placa  			=  	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[21]);
 					var chofer  		=  	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[22]);
@@ -219,16 +204,16 @@ function lmry_fact_electronica_schdl(type) {
 					//Datos de Llegada
 					var ubigeoLlegada	=   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[24]);
 					var dirLlegada     	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[25]);
-					dirLlegada='Av. Manuel Olguin 543';
-						//dirLlegada      =   dirLlegada.replace(/\r\n/gi, " ");
+						//dirLlegada='Av. Manuel Olguin 543';
+						dirLlegada      =   dirLlegada.replace(/\r\n/gi, " ");
 					var numContenedor   =   busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[26]);
 
 
 					//Datos de Partida
 					var ubigeoPartida   =	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[27]);
 					var dirPartida     	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[28]);
-					dirPartida='Av. Juan Alfaro 170';
-						//dirPartida      =   dirPartida.replace(/\r\n/gi, " ");
+					// dirPartida='Av. Juan Alfaro 170';
+						dirPartida      =   dirPartida.replace(/\r\n/gi, " ");
 					//var codPuerto		=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[37]);
 					
 					tranID				=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[29]);
@@ -250,30 +235,7 @@ function lmry_fact_electronica_schdl(type) {
 				detalleItem.push(descripcion);
 				var codProducto		= 	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[33]);
 				detalleItem.push(codProducto);
-
-				//var serieLote 		  =	busquedaTransaccionesResult[cuentaDetalle].getText(columnsDetalle[30]);
-				var serieLote		  =	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[34]);
-				nlapiLogExecution('ERROR', 'serieLote', serieLote);
-				//nlapiLogExecution('ERROR', 'serieLote_2', serieLote_2);
-				if (serieLote != null && serieLote != '') {					
-					nlapiLogExecution('ERROR', 'serieLote ENTRO', 'ENTRO ' +serieLote);
-					var arraySerieLote = serieLote.split("\n");
-					nlapiLogExecution('ERROR', 'arraySerieLote.length', arraySerieLote.length);
-
-					var valorLoteSerie = "";
-					for (var k = 0; k < arraySerieLote.length; k++) {	
-						if (k != arraySerieLote.length - 1) {
-							valorLoteSerie += arraySerieLote[k] + ", ";
-						}else{
-							valorLoteSerie += arraySerieLote[k];
-						}	
-					}
-					
-					for (var i = 0; i < arraySerieLote.length; i++) {
-						nlapiLogExecution('ERROR', 'arraySerieLote - ' + i, arraySerieLote[i]);
-					}
-					detalleItem.push(valorLoteSerie);
-				}
+				
 
 				arrayItems.push(detalleItem);			
 			}
@@ -295,7 +257,7 @@ function lmry_fact_electronica_schdl(type) {
 			'<DespatchAdvice xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:qdt="urn:oasis:names:specification:ubl:schema:xsd:QualifiedDatatypes-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:sac="urn:sunat:names:specification:ubl:peru:schema:xsd:SunatAggregateComponents-1" xmlns:udt="urn:un:unece:uncefact:data:specification:UnqualifiedDataTypesSchemaModule:2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:ccts="urn:un:unece:uncefact:documentation:2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" xmlns:ds="http://www.w3.org/2000/09/xmldsig#" xmlns="urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2">\n'+
 			'\t<cbc:UBLVersionID>2.1</cbc:UBLVersionID>\n'+
 			'\t<cbc:CustomizationID>1.0</cbc:CustomizationID>\n'+
-			'\t<cbc:ID>T001-00001931</cbc:ID>\n'+
+			'\t<cbc:ID>'+serieCXC+'-'+nroCbte+'</cbc:ID>\n'+
 			'\t<cbc:IssueDate>'+fechaEmision+'</cbc:IssueDate>\n'+
 			'\t<cbc:DespatchAdviceTypeCode>'+tipoDeGuia+'</cbc:DespatchAdviceTypeCode>\n'+
 			'\t<cbc:Note>'+observaciones+'</cbc:Note>\n'+
@@ -443,7 +405,7 @@ function lmry_fact_electronica_schdl(type) {
 	}
 
 	var returnRespCbte = WSRespCbte();
-	sendMail(xmlEnvio, returnIniSesion, returnUltimoNroCbte, returnAutCbtsSinc,returnSalidaTransac, returnRespCbte, "", "");
+	
 
 	if (exito) {
 		//var returnRespCbte     = WSRespCbte();
@@ -459,9 +421,9 @@ function lmry_fact_electronica_schdl(type) {
 		}
 		nlapiLogExecution('ERROR','ENTROEXITO','EXITO');
 
-		nlapiSubmitField(type, internalId, ['custbody_lmry_pe_identificador_comfiar', 'custbody_lmry_num_preimpreso', 'custbody_lmry_pe_num_aut_comfiar'], [TransaccionId, secuencial, numAut]);
+		nlapiSubmitField(type, internalId, ['custbody_lmry_pe_identificador_comfiar', 'custbody_lmry_num_preimpreso'], [TransaccionId, secuencial]);
 	}
-	nlapiLogExecution('ERROR','TEFI','HoliTEfi');
+	
 
 	sendMail(xmlEnvio, returnIniSesion, returnUltimoNroCbte, returnAutCbtsSinc, returnSalidaTransac, returnRespCbte, returnDescargarPdf, PDF);
 
@@ -709,6 +671,7 @@ function WSRespCbte(){
 		soapHeaders['SOAPAction'] = "http://comfiar.com.ar/webservice/RespuestaComprobante";
 		    
 	
+	nlapiLogExecution('ERROR','StringXML',StringXML);
 	var objRespCbte	   = nlapiRequestURL(URL_WS, StringXML, soapHeaders);
 
 	var returnRespCbte = objRespCbte.getBody();
@@ -757,7 +720,7 @@ function WSUltimoNroCbte(){
 		secuencial++;
 
 		secuencial = "" + secuencial;
-		var pad = "000000000";
+		var pad = "00000000";
 			secuencial = pad.substring(0, pad.length - secuencial.length) + secuencial;
 			nroCbte = secuencial;
 		nlapiLogExecution('ERROR', 'secuencial', secuencial);

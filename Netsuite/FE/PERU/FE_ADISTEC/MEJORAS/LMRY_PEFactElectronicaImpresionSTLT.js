@@ -44,8 +44,8 @@ function lmryImprimirFactElectronicaSTLT(request, response){
 
 	
 	var serie = request.getParameter('ptoVenta');
-		puntoDeVentaIdWS = nlapiLookupField('customrecord_lmry_pe_pto_vta_ws',serie,'custrecord_lmry_pe_pto_vta');
-			/*
+		//puntoDeVentaIdWS = nlapiLookupField('customrecord_lmry_pe_pto_vta_ws',serie,'custrecord_lmry_pe_pto_vta');
+			
 			serie = serie.substring(1,serie.length);
 			if (serie == '001') {
 				puntoDeVentaIdWS = '1000';
@@ -54,7 +54,7 @@ function lmryImprimirFactElectronicaSTLT(request, response){
             }else if (serie == '003') {
             	puntoDeVentaIdWS = '1000';
 			}
-			*/
+		
 	
 	codDoc = request.getParameter('codDoc');
 	nroCbte = request.getParameter('nroCbte');
