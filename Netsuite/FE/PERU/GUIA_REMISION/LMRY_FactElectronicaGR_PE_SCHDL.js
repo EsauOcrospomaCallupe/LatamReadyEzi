@@ -829,6 +829,7 @@ function FormatoDDMMYYY(fecha){
 	
 function sendMail(content, WSIniSesion, WSUltimoNroCbte, WSAutCbtsSinc, WSSalidaTransac, WSRespCbte, WSDescargarPdf, PDF){
 
+
 	var currentuser = nlapiGetUser();
 	var recEmp      = nlapiLookupField('employee',currentuser,['firstname','email']);
 	var nameUser    = recEmp.firstname;
@@ -902,6 +903,7 @@ function sendMail(content, WSIniSesion, WSUltimoNroCbte, WSAutCbtsSinc, WSSalida
 
 	nlapiLogExecution('ERROR', 'SE ENVIO CORREO', FileName);
 }
+
 
 function retornaValorFecha(valor){
 	valor = valor+'';
