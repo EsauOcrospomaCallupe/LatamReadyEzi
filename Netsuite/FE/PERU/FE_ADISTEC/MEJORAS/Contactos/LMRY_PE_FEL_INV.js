@@ -1005,63 +1005,41 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
             body: body,
             attachments: fileXML
         });
+
+
 	}
 
 	function datosContacto(idinter){
 	
 		var aContact = new Array();
-		// Ejecuta la busqueda  
-		//var cResult = nlapiLoadSearch('contact', 'customsearch_lmry_contact_test');	
-		var cResult = search.load({
-			id: 'customsearch_lmry_contact_test'
-		});
+        // Ejecuta la busqueda  
+        // var cResult = nlapiLoadSearch('contact', 'customsearch_lmry_contact_test');   
+        var cResult = search.load({
+          id: 'customsearch_lmry_contact_test',
+       	});
+        //cResult.addFilter(new search.Filter('company', null, 'anyof', internalid));
+        var cResultFilter = search.createFilter({
+			name: 'internalidnumber',
+			join: 'transaction',
+			operator: 'equalto',
+	  		values: idinter
+        });
 
-		//cResult.addFilter(new search.Filter('company', null, 'anyof', internalid));
-		var cResultFilter = search.createFilter({
-		    name: 'entity',
-		    operator: search.Operator.ISEMPTY,
-		});
+        cResult.filters.push(cResultFilter);
 
-		var dResult = mySearch.run().getRange({
-                start: 0,
-                end: 100
-                });
-            for (var i = 0; i < dResult.length; i++) {
-                var entity = dResult[i].getValue({
-                    name: 'entity'
-                });
-                var subsidiary = dResult[i].getValue({
-                    name: 'subsidiary'
-                });
-            }
-		//var dResult = cResult.runSearch();
-		// Trae rango de 1000 Registros
-		
-		if (lResult != null && lResult != '')
-		{
-			var intLength = lResult.length;
-
-			// Procesa la busqueda consultada
-			var pos = 0;
-			while ( pos<intLength )	
-			{
-			// Columnas del reporte
-				var datColumns = lResult[pos].getAllColumns();	
-
-				// Coloca los correo en un arreglo
-				aContact[pos] = lResult[pos].getValue(datColumns[2]);
-			// Siguiente registro
-			pos++;
-			}
-		}
-
-		// Libera variables
-		var cResult = null;	
-		var dResult = null;
-		var lResult = null;	
-
-		// devuelve el correo
-		return aContact;
+        var dResult = cResult.run().getRange(0,10);
+        for (var i = 0; i < dResult.length; i++) {
+        	aContact[i]= new Array();
+            var nombre = dResult[i].getValue({
+                name: 'entityid'
+            });
+            var correito = dResult[i].getValue({
+                name: 'email'
+            });
+			aContact[i][0]= nombre;
+			aContact[i][1]=correito;
+        }
+        return aContact;
 	}	
 
 	function replaceXML(xml){
