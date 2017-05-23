@@ -1015,8 +1015,26 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 		var cResult = search.load({
 			id: 'customsearch_lmry_contact_test'
 		});
-		cResult.addFilter(new search.Filter('company', null, 'anyof', internalid));
-		var dResult = cResult.runSearch();
+
+		//cResult.addFilter(new search.Filter('company', null, 'anyof', internalid));
+		var cResultFilter = search.createFilter({
+		    name: 'entity',
+		    operator: search.Operator.ISEMPTY,
+		});
+
+		var dResult = mySearch.run().getRange({
+                start: 0,
+                end: 100
+                });
+            for (var i = 0; i < dResult.length; i++) {
+                var entity = dResult[i].getValue({
+                    name: 'entity'
+                });
+                var subsidiary = dResult[i].getValue({
+                    name: 'subsidiary'
+                });
+            }
+		//var dResult = cResult.runSearch();
 		// Trae rango de 1000 Registros
 		
 		if (lResult != null && lResult != '')
