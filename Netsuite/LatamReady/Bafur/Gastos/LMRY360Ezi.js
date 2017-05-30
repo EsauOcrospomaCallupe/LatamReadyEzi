@@ -16,15 +16,13 @@ var createinvo  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoic
 // Arreglo para la facturacion
 var arrTimes = new Array();
 var arrPosic = 0;
-var sendmail= false;
+var sendmail= true;
 // Empieza el proceso del Schedule
 function SAE_main_schedule()
 {
-	try {			
-
-		var transaccionBck = '';
+	try {		
 		// Ejecuta la busqueda
-		var objResultSearch = nlapiLoadSearch('transaction','customrecord_lmry_law360_expense');	
+		var objResultSearch = nlapiLoadSearch('customrecord_lmry_law360_expense','customsearch_lmry_law360_state_acc_exp_2');	
 		var objResult	= objResultSearch.runSearch();
 
 		if (objResult!='' && objResult!=null)
@@ -32,10 +30,11 @@ function SAE_main_schedule()
 			if (objResult.length>0)
 			{
 				// Log de Errores
-				nlapiLogExecution('ERROR', 'customrecord_lmry_law360_expense: length -> ', objResult.length);
+				nlapiLogExecution('ERROR','customrecord_lmry_law360_expense: length -> ', objResult.length);
 				 
 				// Procesa la busqueda consultada
 				var fil = 0;
+				var monto=0;	
 				while ( fil<objResult.length )
 				{
 					
@@ -44,40 +43,22 @@ function SAE_main_schedule()
 
 					var fecha         =	objResult[fil].getValue(columnsDetalle[2]);
 					var descripcion   =	objResult[fil].getValue(columnsDetalle[3]);
-					var importe       =	objResult[fil].getValue(columnsDetalle[4]);
+					
 					var empleado      =	objResult[fil].getValue(columnsDetalle[5]);
 					var tipoobservacion    =	objResult[fil].getValue(columnsDetalle[6]);
 					var observacionCliente =	objResult[fil].getValue(columnsDetalle[7]);
 					var observacionResurso =	objResult[fil].getValue(columnsDetalle[8]);
 					
-					// Se procesa el estado de cuenta
-					if ( transaccion == transaccionBck )
-					{
-						/*pasunto	   = objResult[fil].getValue('custrecord_lmry_law360_expens_project'); 
-						periodo    = objResult[fil].getValue('custrecord_lmry_law360_expens_period'); 
+var importe       =	objResult[fil].getValue(columnsDetalle[4]);
+					monto=monto+importe;
 
-						var CustRecoID = objResult[fil].getValue('internalid');
-						var InternalID = objResult[fil].getValue('custrecord_lmry_law360_expens_intern');
-						var SecuenciID = objResult[fil].getValue('custrecord_lmry_law360_expens_secuen');
-						if (InternalID!=null && InternalID!=''){
-							var cresult1 = nlapiSubmitField('customrecord_lmry_law360_expense', CustRecoID, 'custrecord_lmry_law360_expens_cusapp', pstatus);
-							
-							// Envio de mail
-							sendmail = true;						
-						}
-						*/
-
-
-						
-						// Siguiente Registro
-						fil++;
-
-						// Ultima linea
-						if (fil==objResult.length){ break; }
-					} // Se procesa el estado de cuenta
-
-					// Envio de mail
-					if (sendmail==true) {
+					// Siguiente Registro
+					fil++;
+					
+					
+				} // Procesa la busqueda consultada
+				// Envio de mail
+				if (sendmail==true) {
 						// Crea la factura si esta aprobado y activo el feature crear factura
 						if ( createinvo=='T' || createinvo==true )
 						{
@@ -105,8 +86,7 @@ function SAE_main_schedule()
 						
 						// Log de Errores
 						nlapiLogExecution('ERROR', 'pasunto , periodo , unimemory -> ', pasunto + ' , ' + periodo + ' , ' + unimemory);
-					} // Envio de mail
-				} // Procesa la busqueda consultada
+				} // Envio de mail
 			}
 		} // Ejecuta la busqueda
 		

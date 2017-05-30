@@ -28,45 +28,42 @@ function SAE_main_schedule()
 		 ********************************************************/ 
 		
 		// Arreglo de Filtros
-		var filters = new Array();
-			// Field : LatamReady - Law360 Expense
-			// 		Record : LatamReady - Law360 State Account Expens
-			//		Field  : Latam - Law360 Schedule
-			// Field : Latam - Law360 Billable
-			filters[0] = new nlobjSearchFilter('custrecord_lmry_law360_saccexpe_sched', 'custrecord_lmry_law360_expens_accsta', 'is', 'T');	
-			filters[1] = new nlobjSearchFilter('custrecord_lmry_law360_expens_billabe', null, 'is', 'T');	
-		// Arreglo de Columnas
 		var columns = new Array();
-			columns[0] = new nlobjSearchColumn('internalid');
-			columns[1] = new nlobjSearchColumn('custrecord_lmry_law360_expens_accsta');		// 	Latam - Law360 Account State
-			columns[2] = new nlobjSearchColumn('custrecord_lmry_law360_expens_type');		// Latam - Law360 Type Transaction
-			columns[3] = new nlobjSearchColumn('custrecord_lmry_law360_expens_intern');		// Latam - Law360 Internal ID
-			columns[4] = new nlobjSearchColumn('custrecord_lmry_law360_expens_secuen');		// Latam - Law360 Secuence Line
-			columns[5] = new nlobjSearchColumn('custrecord_lmry_law360_expens_project');	// Latam - Law360 Project
-			columns[6] = new nlobjSearchColumn('custrecord_lmry_law360_expens_period');		// Latam - Law360 Period
-			columns[7] = new nlobjSearchColumn('custrecord_lmry_law360_expens_langua');		// Latam - Law360 Language
-			columns[8] = new nlobjSearchColumn('custrecord_lmry_law360_saccexpe_state', 'custrecord_lmry_law360_expens_accsta');
-			columns[9] = new nlobjSearchColumn('customer', 'custrecord_lmry_law360_expens_project');
+			columns[0] = new nlobjSearchColumn('internalid');								//6
+			columns[1] = new nlobjSearchColumn('custrecord_lmry_law360_expens_accsta');		// 7	Latam - Law360 Account State
+			columns[2] = new nlobjSearchColumn('custrecord_lmry_law360_expens_type');		// 8Latam - Law360 Type Transaction
+			columns[3] = new nlobjSearchColumn('custrecord_lmry_law360_expens_intern');		// 9Latam - Law360 Internal ID
+			columns[4] = new nlobjSearchColumn('custrecord_lmry_law360_expens_secuen');		// 10Latam - Law360 Secuence Line
+			columns[5] = new nlobjSearchColumn('custrecord_lmry_law360_expens_project');	// 11Latam - Law360 Project
+			columns[6] = new nlobjSearchColumn('custrecord_lmry_law360_expens_period');		// 12Latam - Law360 Period
+			columns[7] = new nlobjSearchColumn('custrecord_lmry_law360_expens_langua');		// 13Latam - Law360 Language
+			columns[8] = new nlobjSearchColumn('custrecord_lmry_law360_saccexpe_state', 'custrecord_lmry_law360_expens_accsta');//14
+			columns[9] = new nlobjSearchColumn('customer', 'custrecord_lmry_law360_expens_project');//15
 			columns[10] = new nlobjSearchColumn('custrecord_lmry_law360_expens_jobcurrenc');	// Latam - Law360 Job Currency
 			columns[11]= columns[1].setSort();
 			columns[12]= columns[2].setSort();
 		// Ejecuta la busqueda
-		var objResult = nlapiSearchRecord('customrecord_lmry_law360_expense', null, filters, columns);	
+		var objResultSearch = nlapiLoadSearch('customrecord_lmry_law360_expense','customsearch_lmry_law360_state_acc_exp_2');	
+		var objResult	= objResultSearch.runSearch();
+
 		if (objResult!='' && objResult!=null)
 		{
 			if (objResult.length>0)
 			{
 				// Log de Errores
 				nlapiLogExecution('ERROR', 'customrecord_lmry_law360_expense: length -> ', objResult.length);
+
 				
 				// Procesa la busqueda consultada
 				var fil = 0;
 				while ( fil<objResult.length )
 				{
+					var columnsDetalle	=	busquedaTransaccionesResult[fil].getAllColumns();
+
 					// Estado de cuenta a Procesar
-					var recordID = objResult[fil].getValue('custrecord_lmry_law360_expens_accsta');
-					var reestado = objResult[fil].getValue('custrecord_lmry_law360_saccexpe_state', 'custrecord_lmry_law360_expens_accsta');
-					var languaj  = objResult[fil].getValue('custrecord_lmry_law360_expens_langua');
+					var recordID = objResult[fil].getValue(columnsDetalle[7]);
+					var reestado = objResult[fil].getValue(columnsDetalle[14]);
+					var languaj  = objResult[fil].getValue(columnsDetalle[13]);
 					var TranID   = 0;
 					var pstatus  = 0;
 					var buttomID = 0;
@@ -88,34 +85,21 @@ function SAE_main_schedule()
 									'custrecord_lmry_law360_saccexpe_state', 
 									'Se esta procesando ...');
 
-					// Arreglo de tiempos
-					arrTimes = new Array();
-					arrPosic = 0;
-
-					// Internal ID del Proyecto
-					arrTimes[arrPosic] = objResult[fil].getValue('custrecord_lmry_law360_expens_project');
-					// Internal ID del Cliente
-					arrPosic++;			
-					arrTimes[arrPosic] = objResult[fil].getValue('customer', 'custrecord_lmry_law360_expens_project');				
-					// Internal ID de la Moneda
-					arrPosic++;			
-					arrTimes[arrPosic] = objResult[fil].getValue('custrecord_lmry_law360_expens_jobcurrenc');
-
 					// Se procesa el estado de cuenta
-					while ( recordID == objResult[fil].getValue('custrecord_lmry_law360_expens_accsta') )
+					while ( recordID == objResult[fil].getValue(columnsDetalle[7]) )
 					{
-						pasunto	   = objResult[fil].getValue('custrecord_lmry_law360_expens_project'); 
-						periodo    = objResult[fil].getValue('custrecord_lmry_law360_expens_period'); 
+						pasunto	   = objResult[fil].getValue(columnsDetalle[11]); 
+						periodo    = objResult[fil].getValue(columnsDetalle[12]); 
 
-						var CustRecoID = objResult[fil].getValue('internalid');
-						var InternalID = objResult[fil].getValue('custrecord_lmry_law360_expens_intern');
-						var SecuenciID = objResult[fil].getValue('custrecord_lmry_law360_expens_secuen');
+						var CustRecoID = objResult[fil].getValue(columnsDetalle[6]);
+						var InternalID = objResult[fil].getValue(columnsDetalle[9]);
+						var SecuenciID = objResult[fil].getValue(columnsDetalle[10]);
 						if (InternalID!=null && InternalID!=''){
 							var cresult1 = nlapiSubmitField('customrecord_lmry_law360_expense', CustRecoID, 'custrecord_lmry_law360_expens_cusapp', pstatus);
 							
-							// Internal ID del TimeBill
-							arrPosic++;
-							arrTimes[arrPosic] = InternalID;
+							//proceso acumulador de importes
+							var importe       =	objResult[fil].getValue(columnsDetalle[4]);
+							monto=monto+importe;							
 							
 							// Envio de mail
 							sendmail = true;						
@@ -173,18 +157,15 @@ function SAE_main_schedule()
 /* ------------------------------------------------------------------------------------------------------
  * Funcion para crear la factura de un estado de cuenta de tiempos
  * --------------------------------------------------------------------------------------------------- */
-function law360_invoice(atimes)
+function law360_invoice(montoTot)
 {	
 	try
 	{
+		var invoice_entity  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_item');
 		var invoice_item  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_item');
 		var invoice_taxc  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_taxcode');
 		var invoice_loca  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_location');
 		var idRecord = 0;
-		var arrQY = atimes.length;
-		// Log de Errores
-		nlapiLogExecution('ERROR', 'law360_invoice - arrQY-> ', arrQY);
-		if (arrQY<3) { return idRecord; }
 
 		// Valida que este configurado para la generacion de factura
 		if (invoice_item=='' || invoice_item==null || invoice_taxc=='' || invoice_taxc==null){
@@ -195,7 +176,7 @@ function law360_invoice(atimes)
 			return idRecord;
 		}
 		// Se optiene el valore del tipo de documento Sunat, en la ficha del cliente
-		var tipodocu = nlapiLookupField('customer', atimes[1], 'custentity_tipo_doc_id_sunat');
+		var tipodocu = nlapiLookupField('customer', invoice_entity, 'custentity_tipo_doc_id_sunat');
 	
 		var DocuTipo = '';
 		var DocuSeri = '';
@@ -231,8 +212,8 @@ function law360_invoice(atimes)
 		 * poder facturar los tiempos.
 		 *********************************************/ 
 		var NewRecord = nlapiCreateRecord('invoice');
-			NewRecord.setFieldValue('entity', atimes[1]);		// Cliente
-			NewRecord.setFieldValue('currency', atimes[2]);		// Moneda
+			NewRecord.setFieldValue('entity', invoice_entity);		// Cliente
+			
 			NewRecord.setFieldValue('location', invoice_loca) 	// Ubicacion
 			// Pupulado de campoas para la FE
 			NewRecord.setFieldValue('custbody_lmry_document_type', DocuTipo);		// Latam - Legal Document Type
@@ -242,56 +223,16 @@ function law360_invoice(atimes)
 			NewRecord.setLineItemValue('item', 'quantity'	, 1, 1);
 			NewRecord.setLineItemValue('item', 'item'		, 1, invoice_item);
 			NewRecord.setLineItemValue('item', 'price'		, 1, -1); // Custom
-			NewRecord.setLineItemValue('item', 'rate'		, 1, nlapiFormatCurrency(1));
+			NewRecord.setLineItemValue('item', 'rate'		, 1, montoTot);//total de los importes
 			NewRecord.setLineItemValue('item', 'taxcode'	, 1, invoice_taxc);
 			NewRecord.setLineItemValue('item', 'custcol_4601_witaxapplies', 1, 'F'); 	// With Holding Tax
 
 		// Graba el invoice nuevo
 		idRecord = nlapiSubmitRecord(NewRecord);
 
-		var NewRecord = nlapiLoadRecord('invoice', idRecord);
-	 		// Elimina las lineas de factura
-			var recQY = NewRecord.getLineItemCount('item');
-			for (var ind=1; ind<=recQY; ind++) 
-			{
-				NewRecord.selectLineItem('item', ind);
-				NewRecord.removeLineItem('item', ind); 				
-			}
-	 		// Marca los Gastos para a facturar
-			var recQY = NewRecord.getLineItemCount('expcost');
-			for (var ind=3; ind<arrQY; ind++) 
-			{
-				for (var pos=1; pos<=recQY; pos++) 
-				{
-					if (NewRecord.getLineItemValue('expcost', 'doc', pos)==atimes[ind])
-					{
-						NewRecord.setLineItemValue('expcost', 'apply', pos, 'T');
-					}
-				}
-			}
-		// Graba el invoice nuevo
-		if ( recQY==0 )
-		{
-			// Log de Errores
-			nlapiLogExecution('ERROR', 'law360_invoice - No tiene tiempos para facturar atimes-> ', atimes);
-			
-			// Elimina la factura temporal
-			nlapiDeleteRecord('invoice', idRecord);
-			
-			// Libera el internal ID
-			idRecord = 0;
-		}else{
-			idRecord = nlapiSubmitRecord(NewRecord);
-		}
- 	}catch(err){		
-		// Envia correo de error al usuario
-		law360_sendemail(err + ' [ law360_invoice ]', LMRY_script);
-	}
-
 	// Devuel el id nuevo
 	return idRecord;
 }
-
 /* ------------------------------------------------------------------------------------------------------
  * Funcion que devuelve los contactos del proyecto
  * Busqueda : LatamReady -  Law360 Contact
