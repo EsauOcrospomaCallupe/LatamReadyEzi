@@ -27,7 +27,7 @@ function SAE_main_schedule()
 		 * Registro Personalizado : LatamReady - Law360 Expense
 		 ********************************************************/ 
 		
-		// Arreglo de Filtros
+		/*
 		var columns = new Array();
 			columns[0] = new nlobjSearchColumn('internalid');								//6
 			columns[1] = new nlobjSearchColumn('custrecord_lmry_law360_expens_accsta');		// 7	Latam - Law360 Account State
@@ -42,9 +42,13 @@ function SAE_main_schedule()
 			columns[10] = new nlobjSearchColumn('custrecord_lmry_law360_expens_jobcurrenc');	// Latam - Law360 Job Currency
 			columns[11]= columns[1].setSort();
 			columns[12]= columns[2].setSort();
+		*/
+
 		// Ejecuta la busqueda
 		var objResultSearch = nlapiLoadSearch('customrecord_lmry_law360_expense','customsearch_lmry_law360_state_acc_exp_2');	
-		var objResult	= objResultSearch.runSearch();
+		var busquedaResult	= objResultSearch.runSearch();
+		var objResult	= busquedaResult.getResults(0, 100);
+		
 
 		if (objResult!='' && objResult!=null)
 		{
@@ -58,8 +62,8 @@ function SAE_main_schedule()
 				var fil = 0;
 				while ( fil<objResult.length )
 				{
-					var columnsDetalle	=	busquedaTransaccionesResult[fil].getAllColumns();
-
+					var columnsDetalle	=	objResult[fil].getAllColumns();
+					var monto=0.00;
 					// Estado de cuenta a Procesar
 					var recordID = objResult[fil].getValue(columnsDetalle[7]);
 					var reestado = objResult[fil].getValue(columnsDetalle[14]);
@@ -88,8 +92,8 @@ function SAE_main_schedule()
 					// Se procesa el estado de cuenta
 					while ( recordID == objResult[fil].getValue(columnsDetalle[7]) )
 					{
-						pasunto	   = objResult[fil].getValue(columnsDetalle[11]); 
-						periodo    = objResult[fil].getValue(columnsDetalle[12]); 
+						var pasunto	   = objResult[fil].getValue(columnsDetalle[11]); 
+						var periodo    = objResult[fil].getValue(columnsDetalle[12]); 
 
 						var CustRecoID = objResult[fil].getValue(columnsDetalle[6]);
 						var InternalID = objResult[fil].getValue(columnsDetalle[9]);
@@ -143,6 +147,10 @@ function SAE_main_schedule()
 						nlapiLogExecution('ERROR', 'pasunto , periodo , unimemory -> ', pasunto + ' , ' + periodo + ' , ' + unimemory);
 					} // Envio de mail
 				} // Procesa la busqueda consultada
+
+				if(objResult.length==1000){
+					var objResult	= busquedaResult.getResults(1000, 1100);
+				}
 			}
 		} // Ejecuta la busqueda
 		
