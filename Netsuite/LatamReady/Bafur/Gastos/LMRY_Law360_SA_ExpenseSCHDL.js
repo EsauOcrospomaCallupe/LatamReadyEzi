@@ -13,6 +13,7 @@ var opcApprobe  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_stat_a
 var opcReject   = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_stat_acts_rej');
 var employeeid  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_stat_acts_emp');
 var createinvo  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_create');
+
 // Arreglo para la facturacion
 var arrTimes = new Array();
 var arrPosic = 0;
@@ -63,10 +64,11 @@ function SAE_main_schedule()
 				while ( fil<objResult.length )
 				{
 					var columnsDetalle	=	objResult[fil].getAllColumns();
-					var monto=0.00;
+					var monto=0;
 					// Estado de cuenta a Procesar
 					var recordID = objResult[fil].getValue(columnsDetalle[7]);
 					var reestado = objResult[fil].getValue(columnsDetalle[14]);
+					nlapiLogExecution('ERROR','Reestado',reestado);
 					var languaj  = objResult[fil].getValue(columnsDetalle[13]);
 					var TranID   = 0;
 					var pstatus  = 0;
@@ -77,11 +79,13 @@ function SAE_main_schedule()
 						buttomID = 1;
 						pstatus = opcApprobe;
 						pmensaje= 'Aprobado';
+
 					}else{
 						buttomID = 2;
 						pstatus = opcReject;
 						pmensaje= 'Rechazado';
 					}
+					nlapiLogExecution('ERROR','pmensaje',pmensaje);
 
 					// LatamReady - Law360  State Account Time
 					var cresult = nlapiSubmitField('customrecord_lmry_law360_state_acc_expen', 
@@ -103,7 +107,8 @@ function SAE_main_schedule()
 							
 							//proceso acumulador de importes
 							var importe       =	objResult[fil].getValue(columnsDetalle[4]);
-							monto=monto+importe;							
+							monto=monto+parseFloat(importe);	
+							nlapiLogExecution('ERROR','monto',monto);					
 							
 							// Envio de mail
 							sendmail = true;						
@@ -118,17 +123,20 @@ function SAE_main_schedule()
 
 					// Envio de mail
 					if (sendmail==true) {
+						nlapiLogExecution('ERROR','createinvo',createinvo);
 						// Crea la factura si esta aprobado y activo el feature crear factura
 						if ( pmensaje== 'Aprobado' && (createinvo=='T' || createinvo==true) )
+
 						{
 							var idinvoice = law360_invoice(arrTimes);
-							
+							nlapiLogExecution('ERROR','idinvoice',idinvoice);	
 							// LatamReady - Law360 State Account Expens
 							if (idinvoice!=0)
 							{
 								var cresult = nlapiSubmitField('customrecord_lmry_law360_state_acc_expen', 
 												recordID, 
 												'custrecord_lmry_law360_saccexpe_invoice',  idinvoice);
+								nlapiLogExecution('ERROR','ENTRO','ENTRO');
 							}
 						}
 						// LatamReady - Law360  State Account Time
@@ -167,9 +175,8 @@ function SAE_main_schedule()
  * --------------------------------------------------------------------------------------------------- */
 function law360_invoice(montoTot)
 {	
-	try
-	{
-		var invoice_entity  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_item');
+	
+		var invoice_entity  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_expense_entity');
 		var invoice_item  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_item');
 		var invoice_taxc  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_taxcode');
 		var invoice_loca  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_location');
@@ -240,6 +247,7 @@ function law360_invoice(montoTot)
 
 	// Devuel el id nuevo
 	return idRecord;
+	
 }
 /* ------------------------------------------------------------------------------------------------------
  * Funcion que devuelve los contactos del proyecto

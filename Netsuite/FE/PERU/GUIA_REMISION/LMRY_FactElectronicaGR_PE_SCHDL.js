@@ -169,7 +169,7 @@ function lmry_fact_electronica_schdl(type) {
 				    //REmitente
 				    var remiTipoDoc		=  	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[8]);				   
 				    var remiNumDoc		=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[9]);
-				    	remiNumDoc = '20536105523';
+				    	//remiNumDoc = '20536105523';
 				    	cuitId 			= 	remiNumDoc;
 				    var remiRazonSocial =	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[10]);
 					
@@ -369,14 +369,14 @@ function lmry_fact_electronica_schdl(type) {
 
 				xmlEnvio += 
 						'\t\t<cbc:ID>'+(i+1)+'</cbc:ID>\n'+
-						'\t\t<cbc:DeliveredQuantity unitCode="KGM">'+cantidad+'</cbc:DeliveredQuantity>\n'+
+						'\t\t<cbc:DeliveredQuantity unitCode="KGM">'+detalle[1]+'</cbc:DeliveredQuantity>\n'+
 						'\t\t<cac:OrderLineReference>\n'+
-						'\t\t\t<cbc:LineID>1</cbc:LineID>\n'+
+						'\t\t\t<cbc:LineID>'+(i+1)+'</cbc:LineID>\n'+
 						'\t\t</cac:OrderLineReference>\n'+
 						'\t\t<cac:Item>\n'+
-						'\t\t\t<cbc:Name>'+descripcion+'</cbc:Name>\n'+
+						'\t\t\t<cbc:Name>'+detalle[2]+'</cbc:Name>\n'+
 						'\t\t\t<cac:SellersItemIdentification>\n'+
-						'\t\t\t\t<cbc:ID>'+codProducto+'</cbc:ID>\n'+
+						'\t\t\t\t<cbc:ID>'+detalle[3]+'</cbc:ID>\n'+
 						'\t\t\t</cac:SellersItemIdentification>\n'+
 						'\t\t</cac:Item>\n';
 			}
