@@ -165,330 +165,46 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
             /***************************************************************************/
 
             var descCab = xmlEnvio.split('-MONTO2005-')[1];
-            var txt18 ='';
+            var dato ='';
 
             var desclast = '-MONTO2005-'+descCab+'-MONTO2005-';
             descCab=parseFloat(descCab);
             var descGlo = 0.00;
-             var descxn=0.00;
-             var descxy=0.00;
+            var montoDescTot=0.00;
+           
 
-            var inv_lines = new Array();
-            ind = 0;
-
-            var subsi    = rec.getValue('subsidiary');
-            /* Registro Personalizado LatamReady - Items Dscto Related
-				Item      = resultItemDesc[i].getValue(row[0]);
-				Desc      = resultItemDesc[i].getValue(row[1]);
-				Multiplo  = resultItemDesc[i].getValue(row[2]);
-				Promocion = resultItemDesc[i].getValue(row[3]);
-			*/
-        	busqItemDescxn = search.create({
-	            type: 'customrecord_lmry_item_dscto_relacionado',
-	            columns: ['custrecord_lmry_related_item', 'custrecord_lmry_related_dscto',
-	            		'custrecord_lmry_related_multiplo', 'custrecord_lmry_related_promocion' ],
-	            filters: [ ['custrecord_lmry_related_subsidiary', 'anyof', subsi] ]
-	        });
-	        resultItemDescxn = busqItemDescxn.run().getRange(0, 100);
-
-	        /* Registro Personalizado LatamReady - Items Dscto XY
-				ItemX     = resultItemDesc[i].getValue(row[0]);
-				ItemY     = resultItemDesc[i].getValue(row[1]);
-				Desc      = resultItemDesc[i].getValue(row[2]);
-				Multiplo  = resultItemDesc[i].getValue(row[3]);
-				Promocion = resultItemDesc[i].getValue(row[4]);
-			*/
-	        busqItemDescxy = search.create({
-	            type: 'customrecord_lmry_articulos_de_dscto_xy',
-	            columns: ['custrecord_lmry_dscto_item_x', 'custrecord_lmry_dscto_item_y',
-	            		'custrecord_lmry_dscto_item_xy', 'custrecord_lmry_dscto_multiplo_y','custrecord_lmry_dscto_multiplo_xy' ],
-	            filters: [ ['custrecord_lmry_dscto_subsidiaria_xy', 'anyof', subsi] ]
-	        });
-	        resultItemDescxy = busqItemDescxy.run().getRange(0, 100);
-
-            numLines = rec.getLineCount({
-			    sublistId: 'item'
-			});
-			
-            for (var i = 0; i < numLines-1; i++) {
-				item_actual = rec.getSublistValue('item', 'item', i);
-				type_actual = rec.getSublistValue('item', 'itemtype', i);
-				item_sig    = rec.getSublistValue('item', 'item', i+1);
-				
-
-				if(resultItemDescxn != null && resultItemDescxn.length != 0 ){
-		        	for (var j = 0; j < resultItemDescxn.length; j++) {
-		        		row  = resultItemDescxn[j].columns;
-		        		inv_lines[ind] = new Array();
-		        		//esta wa para x+n, lo que hizo manu ta mal creo xd
-		        		if (item_actual == resultItemDescxn[j].getValue(row[0]) && item_sig == resultItemDescxn[j].getValue(row[1]) && type_actual != "Discount") {
-							
-							/* Linea InvLine */
-							inv_lines[ind][0] = i;
-							/* Multiplo */
-							inv_lines[ind][1] = resultItemDescxn[j].getValue(row[2]);
-							/* Promocion */
-							inv_lines[ind][2] = resultItemDescxn[j].getValue(row[3]);
-							/* Price Level */
-							inv_lines[ind][3] = rec.getSublistValue('item', 'price_display', i);
-							/* Cantidad */
-							inv_lines[ind][4] = rec.getSublistValue('item', 'quantity', i);
-
-							inv_lines[ind][5] = 'x+n';
-
-							ind++;
-			            }
-
-		        	}
-
-		        }
-
-			}
-			for (var i = 0; i < numLines-1; i++) {
-				item_actual = rec.getSublistValue('item', 'item', i);
-				type_actual = rec.getSublistValue('item', 'itemtype', i);
-				item_sig    = rec.getSublistValue('item', 'item', i+1);
-				item_sigsig = rec.getSublistValue('item', 'item', i+2);
-
-				if( resultItemDescxy != null && resultItemDescxy.length != 0){
-		        	var indxy=0;
-		        	for(var k=0;k < resultItemDescxy.length; k++){
-		        		var rowx  = resultItemDescxy[k].columns;			            
-			            // este pa x+y, ezi :D
-			            if(item_actual == resultItemDescxy[k].getValue(rowx[0]) && item_sig == resultItemDescxy[k].getValue(rowx[1]) && item_sigsig == resultItemDescxy[k].getValue(rowx[2]) && type_actual != "Discount" ){
-			            	/* Linea InvLine */
-							inv_lines[ind][0] = i;
-							/* Multiplo */
-							inv_lines[ind][1] = resultItemDescxy[k].getValue(rowx[3]);
-							/* Promocion */
-							inv_lines[ind][2] = resultItemDescxy[k].getValue(rowx[4]);
-							/* Price Level */
-							inv_lines[ind][3] = rec.getSublistValue('item', 'price_display', i);
-							/* Cantidad */
-							inv_lines[ind][4] = rec.getSublistValue('item', 'quantity', i);
-
-							inv_lines[ind][5] = 'x+y';
-
-							ind++;
-							indxy++;
-			            }
-		        	}
-		        	
-		        }
-
-			}
-			
-
-			var InvoiceLine  = xmlEnvio.split('cac:InvoiceLine');
-            for (i=0; i<inv_lines.length; i++){
-				//var InvoiceLine  = xmlEnvio.split('cac:InvoiceLine');
-				var num_linea = 0;
+            
+            	var InvoiceLine  = xmlEnvio.split('cac:InvoiceLine');
+      
 				for (var j = 1; j < InvoiceLine.length; j=j+2) {
-
-
+					
 					if(InvoiceLine[j] != null && InvoiceLine[j] != ''){
 						
-						InvoiceLine_temp = InvoiceLine[j];
-
-						if (inv_lines[i][0] == num_linea) {
-							if(inv_lines[i][5]== 'x+n'){
-								/* Multiplo */
-								var multiplo = inv_lines[i][1];
-								/* Promocion */
-								var promo = inv_lines[i][2];
-								/* Price Level */
-								var pricelevel = inv_lines[i][3];
-								/* Cantidad */
-								var cantidad = inv_lines[i][4];
-
-								var cant_bono = parseInt(cantidad/multiplo)*promo;
-								var cant_real = cantidad - cant_bono;
-								var multiplicador = cant_real/cantidad;
-								txt18=txt18+'0.00/'
-								var cant = InvoiceLine_temp.split('-QTY-')[1];
-								if(cant != null && cant != ''){
-									var cant_last = '-QTY-' + cant + '-QTY-';
-									var cant_new  = cant_real;
-									xmlEnvio = xmlEnvio.replace(cant_last, cant_new);
-								}
+						var validador = xmlEnvio.split('-VALI-')[1];
+            			var valiLast = '-VALI-'+validador+'-VALI-';
+            			xmlEnvio = xmlEnvio.replace(valiLast,'');
+						if(validador !=null && validador!=''){
+							InvoiceLine_temp = InvoiceLine[j];
+							var montoDesc = InvoiceLine_temp.split('-MONTODESC-')[1];
+							if(montoDesc != null && montoDesc != ''){
 								
-								/***********************************************************/
-								
-								var cant_sig = InvoiceLine[j+2].split('-QTY-')[1];
-								if(cant_sig != null && cant_sig != ''){
-									var cantsig_last = '-QTY-' + cant_sig + '-QTY-';
-									var cantsig_new  = cant_bono;
-									//var cantsig_new  = '-QTY-' + cant_bono + '-QTY-';
-									xmlEnvio = xmlEnvio.replace(cantsig_last, cantsig_new);
-								}
-								var montodesc = InvoiceLine[j+2].split('-MONTODESC-')[1];
-								if(montodesc != null && montodesc != ''){
-									var montodesc_last = '-MONTODESC-' + montodesc + '-MONTODESC-';
-									var montodesc_new  = montodesc/cant_bono;
-
-									//var montodesc_new  = '-MONTODESC-' + montodesc/cant_bono + '-MONTODESC-';
-									descGlo=descGlo+parseFloat(montodesc);
-	                             	montodesc_new = montodesc_new.toFixed(2);
-	                             	montodesc=montodesc*1.00;
-	                             	montodesc=convertirNumero(montodesc.toFixed(2));
-	                             	txt18=txt18+montodesc+'/';
-	                             	
-									xmlEnvio = xmlEnvio.replace(montodesc_last, montodesc_new);
-									xmlEnvio = xmlEnvio.replace(montodesc_last, montodesc_new);
-									
-								}
-
-								var pricelvl = InvoiceLine[j+2].split('-PRICES-')[1];
-								var pricelvl_last = '-PRICES-'+ pricelvl+'-PRICES-';
-								if(pricelvl != null && pricelvl != ''){
-									
-									xmlEnvio= xmlEnvio.replace(pricelvl_last,'CUSTOM');
-								}else{
-									
-									xmlEnvio= xmlEnvio.replace(pricelvl_last,'PROMOCION');
-								}
-								
-								
-								
-								/***********************************************************/
-
-								var tax_amount = InvoiceLine_temp.split('-TAXAMOUNT-')[1];
-								if(tax_amount != null && tax_amount != ''){
-									var taxamount_last = '-TAXAMOUNT-' + tax_amount + '-TAXAMOUNT-';
-									var taxamount_new  = tax_amount*multiplicador;
-	                                taxamount_new = taxamount_new.toFixed(2);
-									xmlEnvio = xmlEnvio.replace(taxamount_last, taxamount_new);
-									xmlEnvio = xmlEnvio.replace(taxamount_last, taxamount_new);
-								}
-
-								var monto = parseFloat(InvoiceLine_temp.split('-MONTO-')[1]);
-								if(monto != null && monto != ''){
-									var monto_last = '-MONTO-' + monto + '-MONTO-';
-									var monto_new  = monto*multiplicador;
-	                              monto_new = monto_new.toFixed(2);
-									xmlEnvio = xmlEnvio.replace(monto_last, monto_new);
-
-								}
-							}else{
-								if(inv_lines[i][5]== 'x+y'){
-									
-									/* Multiplo */
-									var multiplo = inv_lines[i][1];
-									/* Promocion */
-									var promo = inv_lines[i][2];
-									/* Price Level */
-									var pricelevel = inv_lines[i][3];
-									/* Cantidad */
-									var cantidad = inv_lines[i][4];
-
-									var cant = InvoiceLine_temp.split('-QTY-')[1];
-									cant= parseInt(cant);
-									var resi = cant%multiplo;
-									if(resi == 0){
-										var cant_last = '-QTY-' + cant + '-QTY-';
-										var cant_new  = cant;
-										xmlEnvio = xmlEnvio.replace(cant_last, cant_new);
-
-									}
-									txt18=txt18+'0.00/'
-									/***********************************************************/
-									
-									var cant_sig = InvoiceLine[j+2].split('-QTY-')[1];
-									if(cant_sig != null && cant_sig != ''){
-										var cantsig_last = '-QTY-' + cant_sig + '-QTY-';
-										var cantsig_new  = cant_sig;
-										//var cantsig_new  = '-QTY-' + cant_bono + '-QTY-';
-										xmlEnvio = xmlEnvio.replace(cantsig_last, cantsig_new);
-									}
-									var monto2 = InvoiceLine[j+2].split('-MONTO-')[1];
-									if(monto2 != null && monto2 != ''){
-										var monto2_last = '-MONTO-' + monto2 + '-MONTO-';
-										var monto2_new  = monto2;
-
-										//var montodesc_new  = '-MONTODESC-' + montodesc/cant_bono + '-MONTODESC-';
-										xmlEnvio = xmlEnvio.replace('-MONTODESC-', descGlo);
-										descGlo=descGlo+parseFloat(monto2);
-										monto2=monto2*1.00;
-										monto2=convertirNumero(monto2.toFixed(2));
-										txt18=txt18+monto2+'/';
-										
-		                              	//monto2_new = monto2_new.toFixed(2);
-		                              
-										xmlEnvio = xmlEnvio.replace(monto2_last, monto2_new);
-										xmlEnvio = xmlEnvio.replace('-MONTODESC-', descGlo);
-									
-									}
-									var tax_amount2 = InvoiceLine[j+2].split('-TAXAMOUNT-')[1];
-									if(tax_amount2 != null && tax_amount2 != ''){
-										var taxamount2_last = '-TAXAMOUNT-' + tax_amount2 + '-TAXAMOUNT-';
-										var taxamount2_new  = tax_amount2;
-		                               // taxamount2_new = taxamount2_new.toFixed(2);
-										xmlEnvio = xmlEnvio.replace(taxamount2_last, taxamount2_new);
-										xmlEnvio = xmlEnvio.replace(taxamount2_last, taxamount2_new);
-									}
-									
-									
-									
-									/***********************************************************/
-									
-									var tax_amount = InvoiceLine_temp.split('-TAXAMOUNT-')[1];
-									if(tax_amount != null && tax_amount != ''){
-										var taxamount_last = '-TAXAMOUNT-' + tax_amount + '-TAXAMOUNT-';
-										var taxamount_new  = tax_amount;
-		                                //taxamount_new = taxamount_new.toFixed(2);
-										xmlEnvio = xmlEnvio.replace(taxamount_last, taxamount_new);
-										xmlEnvio = xmlEnvio.replace(taxamount_last, taxamount_new);
-									}
-
-									var monto = parseFloat(InvoiceLine_temp.split('-MONTO-')[1]);
-									if(monto != null && monto != ''){
-										var monto_last = '-MONTO-' + monto + '-MONTO-';
-										var monto_new  = monto;
-		                             // monto_new = monto_new.toFixed(2);
-										xmlEnvio = xmlEnvio.replace(monto_last, monto_new);
-									}
-								
-								}
-
+								//montoDesc=montoDesc.toFixed(2);
+								montoDesc= parseFloat(montoDesc);
+								montoDescTot = montoDescTot + montoDesc;
 
 							}
-
-
-						}else{
-							/*
-							if (InvoiceLine_temp.indexOf("*ESDESC*") != -1) {
-								log.debug("SI Entro -1", "SI Entro -1 i: " +i+ " - j: " + j + " - num_linea: " + num_linea);
-								xmlEnvio = xmlEnvio.replace('-QTY-', '');xmlEnvio = xmlEnvio.replace('-QTY-', '');
-							}*/
-							/*
-							xmlEnvio = xmlEnvio.replace('-QTY-', '');xmlEnvio = xmlEnvio.replace('-QTY-', '');
-							xmlEnvio = xmlEnvio.replace('-TAXAMOUNT-', '');xmlEnvio = xmlEnvio.replace('-TAXAMOUNT-', '');
-							xmlEnvio = xmlEnvio.replace('-TAXAMOUNT-', '');xmlEnvio = xmlEnvio.replace('-TAXAMOUNT-', '');
-							xmlEnvio = xmlEnvio.replace('-MONTO-', '');xmlEnvio = xmlEnvio.replace('-MONTO-', '');
-							*/
-							//xmlEnvio= xmlEnvio.replace(pricelvl_last,inv_lines[ind+1][3]);
-							
-
 						}
-
-						num_linea++;
-
-					}
+					}	
 				}
-			}
-
-			reg = new RegExp('-PRICES-', "g");
-			xmlEnvio = xmlEnvio.replace(reg, '');
-			reg = new RegExp('-QTY-', "g");
-			xmlEnvio = xmlEnvio.replace(reg, '');
-			reg = new RegExp('-TAXAMOUNT-', "g");
-			xmlEnvio = xmlEnvio.replace(reg, '');
-			reg = new RegExp('-MONTO-', "g");
-			xmlEnvio = xmlEnvio.replace(reg, '');
             
-	        /***************************************************************************/
+            descGlo= descCab+montoDescTot;
+            xmlEnvio = xmlEnvio.replace(desclast,descGlo);
+            reg = new RegExp('-MONTODESC-', "g");
+			xmlEnvio = xmlEnvio.replace(reg, '');
 
-			/*Generacion Sumatorias Montos por Impuesto*/
+
+            /***************************************************************************/
+            /*Generacion Sumatorias Montos por Impuesto*/
 			/*Para MONTOLINEA : "Total valor de venta - operaciones gravadas" - Cod 10 "Gravado - Operación Onerosa". */
 			var monto_1001 = 0.00;
 			/*Para MONTOLINEA : "Total valor de venta - operaciones inafectas" - Cod 40 "Exportación". */ 
@@ -552,74 +268,9 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 			xmlEnvio = xmlEnvio.replace('-MONTO1004-', monto_1004);
 			reg = new RegExp('-MONTOLINEA-', "g");
 			xmlEnvio = xmlEnvio.replace(reg, '');
-			/*
-			reg = new RegExp('-QTY-', "g");
-			xmlEnvio = xmlEnvio.replace(reg, '');
-			reg = new RegExp('-TAXAMOUNT-', "g");
-			xmlEnvio = xmlEnvio.replace(reg, '');
-			reg = new RegExp('-MONTO-', "g");
-			xmlEnvio = xmlEnvio.replace(reg, '');
-			*/	
-			/* Se reemplaza Totales de venta segun Tipo de IGV pero sin descuentos en TextosLibres 15, 16 y 17 */
-			
-			//subtot=convertirNumero(subtot);
-			var descItem=descGlo;
-			var montorep=montoo_1001;
 
-			montoo_1001=montoo_1001+descItem;
-			montoo_1001=montoo_1001.toFixed(2);
-			montoo_1001=convertirNumero(montoo_1001);
 
-			var desctot=descGlo+descCab;
-			desctot=desctot.toFixed(2);
-			desctot=convertirNumero(desctot);
-
-			descGlo = descGlo+descCab;
-			descGlo=descGlo.toFixed(2);
-			
-			var subtot=montorep+descItem+descCab;
-			subtot=subtot.toFixed(2);
-			subtot = convertirNumero(subtot);
-
-			descItem=descItem.toFixed(2);
-			descItem=convertirNumero(descItem);
-
-			descCab=descCab.toFixed(2);
-			descCab=convertirNumero(descCab);
-
-			
-			
-			
-			
-			txt18=txt18.substring(0, txt18.length-1);
-			//para la moneda
-			var monedita = xmlEnvio.split('-MON-')[1];
-			var monedita_last= '-MON-'+monedita+'-MON-';
-			
-			if(monedita != null && numeracion != ''){
-				if(monedita=='PEN'){
-					monedita='S/';
-				}else{
-					monedita = '$';
-				}
-			}
-			xmlEnvio = xmlEnvio.replace('-MONEDA-', monedita);
-			xmlEnvio = xmlEnvio.replace('-MONEDA-', monedita);
-			xmlEnvio = xmlEnvio.replace(monedita_last,'');
-
-			xmlEnvio = xmlEnvio.replace('-DESCCAB-', descCab);
-			xmlEnvio = xmlEnvio.replace('-DESCITEM-', descItem);
-			xmlEnvio = xmlEnvio.replace('-1001-', montoo_1001);
-			xmlEnvio = xmlEnvio.replace('-1002-', monto_1002);
-			xmlEnvio = xmlEnvio.replace('-1003-', monto_1003);
-			xmlEnvio = xmlEnvio.replace('-2005-', descItem);
-			xmlEnvio = xmlEnvio.replace('-DESCITEMS-', txt18);
-			xmlEnvio = xmlEnvio.replace('-SUBTOT-', subtot);
-			xmlEnvio = xmlEnvio.replace('-DESCTOT-', descCab);
-
-			//Aqui se reemplaza el descuento global 
-			
-			xmlEnvio = xmlEnvio.replace(desclast,descGlo);
+            /***************************************************************************/
 			/* Aplica descuento a cada sumatoria de montos por tipo de impuesto */
  			/* Detracciones Peru - Solo Factura y ND */
  			if(codDoc=='01' ){

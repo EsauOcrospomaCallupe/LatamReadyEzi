@@ -15,7 +15,7 @@ var employeeid  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_stat_a
 var createinvo  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_create');
 
 // Arreglo para la facturacion
-var arrTimes = new Array();
+
 var arrPosic = 0;
 // Empieza el proceso del Schedule
 function SAE_main_schedule()
@@ -128,7 +128,7 @@ function SAE_main_schedule()
 						if ( pmensaje== 'Aprobado' && (createinvo=='T' || createinvo==true) )
 
 						{
-							var idinvoice = law360_invoice(arrTimes);
+							var idinvoice = law360_invoice(monto);
 							nlapiLogExecution('ERROR','idinvoice',idinvoice);	
 							// LatamReady - Law360 State Account Expens
 							if (idinvoice!=0)
