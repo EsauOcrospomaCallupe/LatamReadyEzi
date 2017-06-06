@@ -68,7 +68,6 @@ function SAE_main_schedule()
 					// Estado de cuenta a Procesar
 					var recordID = objResult[fil].getValue(columnsDetalle[7]);
 					var reestado = objResult[fil].getValue(columnsDetalle[14]);
-					nlapiLogExecution('ERROR','Reestado',reestado);
 					var languaj  = objResult[fil].getValue(columnsDetalle[13]);
 					var TranID   = 0;
 					var pstatus  = 0;
@@ -136,7 +135,7 @@ function SAE_main_schedule()
 								var cresult = nlapiSubmitField('customrecord_lmry_law360_state_acc_expen', 
 												recordID, 
 												'custrecord_lmry_law360_saccexpe_invoice',  idinvoice);
-								nlapiLogExecution('ERROR','ENTRO','ENTRO');
+								
 							}
 						}
 						// LatamReady - Law360  State Account Time
@@ -176,6 +175,7 @@ function SAE_main_schedule()
 function law360_invoice(montoTot)
 {	
 	
+		
 		var invoice_entity  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_expense_entity');
 		var invoice_item  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_item');
 		var invoice_taxc  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_taxcode');
@@ -190,12 +190,14 @@ function law360_invoice(montoTot)
 			// Termina la funcion
 			return idRecord;
 		}
+		
 		// Se optiene el valore del tipo de documento Sunat, en la ficha del cliente
 		var tipodocu = nlapiLookupField('customer', invoice_entity, 'custentity_tipo_doc_id_sunat');
 	
 		var DocuTipo = '';
 		var DocuSeri = '';
 		if (tipodocu!='' && tipodocu!='')
+
 		{
 			/******************************************************
 			 * Busca su equivalencia en el registro persibalizado : 
