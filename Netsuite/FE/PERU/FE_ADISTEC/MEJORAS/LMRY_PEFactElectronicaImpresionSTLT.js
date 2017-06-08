@@ -44,7 +44,19 @@ function lmryImprimirFactElectronicaSTLT(request, response){
 
 	
 	var serie = request.getParameter('ptoVenta');
+	
 		//puntoDeVentaIdWS = nlapiLookupField('customrecord_lmry_pe_pto_vta_ws',serie,'custrecord_lmry_pe_pto_vta');
+		//Tabla Punto DE VENTA
+		var filters = new Array();
+			filters[0] = new nlobjSearchFilter('custrecord_lmry_pe_serie_cxc', null, 'is', serie)
+		var columns = new Array();
+			columns[0] = new nlobjSearchColumn('custrecord_lmry_pe_pto_vta');
+			
+		var puntoDE = nlapiSearchRecord('customrecord_lmry_pe_pto_vta_ws', null, filters, columns);
+		if(puntoDE != null && puntoDE !=''){
+			puntoDeVentaIdWS = puntoDE[0].getValue(columns[0]);
+		}
+		/*
 			
 			serie = serie.substring(1,serie.length);
 			if (serie == '001') {
@@ -54,7 +66,7 @@ function lmryImprimirFactElectronicaSTLT(request, response){
             }else if (serie == '003') {
             	puntoDeVentaIdWS = '1000';
 			}
-		
+		*/
 	
 	codDoc = request.getParameter('codDoc');
 	nroCbte = request.getParameter('nroCbte');
