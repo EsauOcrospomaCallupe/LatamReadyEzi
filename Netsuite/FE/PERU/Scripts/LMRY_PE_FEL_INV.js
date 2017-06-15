@@ -40,6 +40,7 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 	var numAut 			 = '';
 	var secuencial 		 = '';
 	var tranID 			 = '';
+	
 
 	var estado_comfiar   = '';
 
@@ -237,7 +238,7 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
                 result.success = false;
                 result.message = "Failure";
                 //result.message = e.valueOf().toString();
-            }
+            } 
 
 
 
