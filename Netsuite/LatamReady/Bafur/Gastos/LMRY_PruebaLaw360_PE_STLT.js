@@ -26,59 +26,58 @@ function suiteletPrueba(request, response){
 			
 			form.addTab('custpage_maintab', 'Tab');
 			//Sublista 
-			var listalog = form.addSubList('custpage_sublista_envio_elect','staticlist','Estado de comprobantes generados','custpage_maintab');
+			var listalog = form.addSubList('custpage_sublista_envio_elect','staticlist','Estado de Gastos de cuentas','custpage_maintab');
 				listalog.addRefreshButton();
-				listalog.addField('custpage_lmry_colu1','text','ID Lote').setDisplayType("disabled");
-				listalog.addField('custpage_lmry_colu2','text','Fecha').setDisplayType("disabled");
-				listalog.addField('custpage_lmry_colu3', 'text', 'Subsidiaria').setDisplayType("disabled");
-				listalog.addField('custpage_lmry_colu4', 'text', 'Creado por').setDisplayType("disabled");
-				listalog.addField('custpage_lmry_colu5', 'text', 'Transaccion').setDisplayType("disabled");
+				listalog.addField('custpage_lmry_colu0', 'text', 'Ver');
+				listalog.addField('custpage_lmry_colu1','text','Internal ID');
+				listalog.addField('custpage_lmry_colu2','text','Name').setDisplayType("disabled");
+				listalog.addField('custpage_lmry_colu3', 'text', 'Customer').setDisplayType("disabled");
+				listalog.addField('custpage_lmry_colu4', 'text', 'Periodo').setDisplayType("disabled");
+				listalog.addField('custpage_lmry_colu5', 'text', 'Invoice').setDisplayType("disabled");
+				listalog.addField('custpage_lmry_colu6', 'text', 'State').setDisplayType("disabled");
+
 				
 			
 		// the records to be displayed are from a saved search
 		var busquedaInfo = nlapiLoadSearch('customrecord_lmry_law360_state_acc_expen', 'customsearch_lmry_law360_state_acc_exp_2');
-		//	busquedaInfo.addFilter(new nlobjSearchFilter('customer', 'custrecord_lmry_law360_saccexpe_project', 'is', nlapiGetUser()));
+			//busquedaInfo.addFilter(new nlobjSearchFilter('customer', 'custrecord_lmry_law360_saccexpe_project', 'anyof', nlapiGetUser()));
+			nlapiLogExecution('ERROR','ID',nlapiGetUser());
 		var resultSetInfo = busquedaInfo.runSearch();
 		// only display rows from the search result that matches the value in the drop down
 		var results = resultSetInfo.getResults(0, 1000);
+		var urlns = objContext.getSetting('SCRIPT', 'custscript_lmry_netsuite_location');
+		var idVar = '1023';
 		for ( var i = 0; results != null && i < results.length; i++){
 			var row = i + 1;
 			var searchresult = results[i].getAllColumns();
+			var idRea = results[i].getId();
+			var linktext = '';
 			
-			listalog.setLineItemValue('custpage_lmry_colu1', row, results[i].getText(searchresult[0]));
-			listalog.setLineItemValue('custpage_lmry_colu2', row, results[i].getText(searchresult[1]));
-			listalog.setLineItemValue('custpage_lmry_colu3', row, results[i].getText(searchresult[2]));
-			listalog.setLineItemValue('custpage_lmry_colu4', row, results[i].getText(searchresult[3]));
-			listalog.setLineItemValue('custpage_lmry_colu5', row, results[i].getText(searchresult[4]));
+			var url = urlns + '/app/common/custom/custrecordentry.nl?rectype='+idVar+'&id='+idRea;
+			//var url = 'https://system.na1.netsuite.com/app/common/custom/custrecordentry.nl?rectype=1023&id=104;
+			if (url!=null && url!='') {
+				  linktext = '<a target="_blank" href="'+url+'">Ver</a>';
+			}
+			nlapiLogExecution('ERROR','URL',url);
 			
-			
-			
-
-			
-			//listalog.setLineItemValue('custpage_lmry_lote_pdf', row, '');			
+			listalog.setLineItemValue('custpage_lmry_colu0', row, linktext);
+			listalog.setLineItemValue('custpage_lmry_colu1', row, results[i].getId());
+			listalog.setLineItemValue('custpage_lmry_colu2', row, results[i].getValue(searchresult[0]));
+			listalog.setLineItemValue('custpage_lmry_colu3', row, results[i].getText(searchresult[1]));
+			listalog.setLineItemValue('custpage_lmry_colu4', row, results[i].getValue(searchresult[2]));
+			listalog.setLineItemValue('custpage_lmry_colu5', row, results[i].getValue(searchresult[3]));
+			listalog.setLineItemValue('custpage_lmry_colu6', row, results[i].getValue(searchresult[4]));
+				
 		}
 		// Botones del formulario
-		form.addSubmitButton('Generar');
-		form.addResetButton('Cancelar');
+	
+
 		//Asigno Client Script
 		//form.setScript('customscript_lmry_fact_elect_gr_pe_clnt');
 		// Crea el formulario
 		response.writePage(form);
 	}else{
 		
-		var params = new Array();
-		var featuresubs = nlapiGetContext().getFeature('SUBSIDIARIES');
-		if (featuresubs == true || featuresubs == 'T'){
-			params['custscript_lmry_fel_sub_gr_pe'] = request.getParameter('custpage_subsidiary_filter_elect');
-		}
-		params['custscript_lmry_fel_enti_gr_pe'] 		= request.getParameter('custpage_entity_filter_elect');
-		params['custscript_lmry_fel_fac_gr_pe'] 	= request.getParameter('custpage_factura_filter_elect');
-		//
-		params['custscript_lmry_fel_identi_gr_pe'] 	= '06';
 		
-
-		var status = nlapiScheduleScript('customscript_lmry_fact_elect_gr_pe_schdl', 'customdeploy_lmry_fact_elect_gr_pe_schdl', params);
-		//nlapiLogExecution('ERROR', 'Schedule Script', 'status: '+status);
-		nlapiSetRedirectURL('SUITELET','customscript_lmry_fact_elect_gr_pe_stlt','customdeploy_lmry_fact_elect_gr_pe_stlt',false,null);
 	}
 }
