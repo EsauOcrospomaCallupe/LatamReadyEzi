@@ -29,7 +29,7 @@ function suiteletPrueba(request, response){
 			var listalog = form.addSubList('custpage_sublista_envio_elect','staticlist','Estado de Gastos de cuentas','custpage_maintab');
 				listalog.addRefreshButton();
 				listalog.addField('custpage_lmry_colu0', 'text', 'Ver');
-				listalog.addField('custpage_lmry_colu1','text','Internal ID');
+				listalog.addField('custpage_lmry_colu1','text','Internal ID').setDisplayType("disabled");
 				listalog.addField('custpage_lmry_colu2','text','Name').setDisplayType("disabled");
 				listalog.addField('custpage_lmry_colu3', 'text', 'Customer').setDisplayType("disabled");
 				listalog.addField('custpage_lmry_colu4', 'text', 'Periodo').setDisplayType("disabled");
@@ -40,7 +40,7 @@ function suiteletPrueba(request, response){
 			
 		// the records to be displayed are from a saved search
 		var busquedaInfo = nlapiLoadSearch('customrecord_lmry_law360_state_acc_expen', 'customsearch_lmry_law360_state_acc_exp_2');
-			//busquedaInfo.addFilter(new nlobjSearchFilter('customer', 'custrecord_lmry_law360_saccexpe_project', 'anyof', nlapiGetUser()));
+			busquedaInfo.addFilter(new nlobjSearchFilter('customer', 'custrecord_lmry_law360_saccexpe_project', 'anyof', nlapiGetUser()));
 			nlapiLogExecution('ERROR','ID',nlapiGetUser());
 		var resultSetInfo = busquedaInfo.runSearch();
 		// only display rows from the search result that matches the value in the drop down
@@ -53,7 +53,7 @@ function suiteletPrueba(request, response){
 			var idRea = results[i].getId();
 			var linktext = '';
 			
-			var url = urlns + '/app/common/custom/custrecordentry.nl?rectype='+idVar+'&id='+idRea;
+			var url = 'https://'+ urlns + '/app/common/custom/custrecordentry.nl?rectype='+idVar+'&id='+idRea;
 			//var url = 'https://system.na1.netsuite.com/app/common/custom/custrecordentry.nl?rectype=1023&id=104;
 			if (url!=null && url!='') {
 				  linktext = '<a target="_blank" href="'+url+'">Ver</a>';
