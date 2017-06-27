@@ -171,9 +171,9 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
             descCab=parseFloat(descCab);
             var descGlo = 0.00;
             var montoDescTot=0.00;
-           
+            var montosDesc='';
+            var porcentajes='';
 
-            
             	var InvoiceLine  = xmlEnvio.split('cac:InvoiceLine');
       
 				for (var j = 1; j < InvoiceLine.length; j=j+2) {
@@ -188,16 +188,23 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 							var montoDesc = InvoiceLine_temp.split('-MONTODESC-')[1];
 							if(montoDesc != null && montoDesc != ''){
 								
-								//montoDesc=montoDesc.toFixed(2);
+								
 								montoDesc= parseFloat(montoDesc);
 								montoDescTot = montoDescTot + montoDesc;
+								montoDesc=montoDesc.toFixed(2);
+								montosDesc=montosDesc + '-'+montoDesc+'/';
+								porcentajes=porcentajes+'-100%/';
 
 							}
 						}
 					}	
 				}
-            
+            montosDesc=montosDesc.substring(0, montosDesc.length-1);
+            porcentajes=porcentajes.substring(0, porcentajes.length-1);
+            xmlEnvio = xmlEnvio.replace('-PORCENTAJES-',montosDesc);
+            xmlEnvio = xmlEnvio.replace('-MONTOSDESC-',porcentajes);
             descGlo= descCab+montoDescTot;
+            descGlo = descGlo.toFixed(2);
             xmlEnvio = xmlEnvio.replace(desclast,descGlo);
             reg = new RegExp('-MONTODESC-', "g");
 			xmlEnvio = xmlEnvio.replace(reg, '');

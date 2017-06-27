@@ -193,6 +193,11 @@
 	<TextoLibre10>${transaction.createdfrom}</TextoLibre10>
 	<TextoLibre11>${transaction.salesrep}</TextoLibre11>
 	<TextoLibre12>${transaction.custbody_lmry_informacion_adicional}</TextoLibre12>
+	<TextoLibre13></TextoLibre13>
+	<TextoLibre14>-PORCENTAJES-</TextoLibre14>
+	<TextoLibre15>-MONTOSDESC-</TextoLibre15>
+	
+
 </TextosLibres>
 </informacionOrganismo>
 </Comprobante>
