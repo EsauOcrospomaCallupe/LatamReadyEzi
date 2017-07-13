@@ -108,8 +108,7 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 	        if(resultPtoVta != null && resultPtoVta.length != 0){
 	        	for (var i = 0; i < resultPtoVta.length; i++) {
 	        		row  = resultPtoVta[i].columns;
-	        		xmlEnvio = xmlEnvio.replace('*PTOVTA*', resultPtoVta[i].getValue(row[0]));
-	        		xmlEnvio = xmlEnvio.replace('*PTOVTA1*', resultPtoVta[i].getText(row[0]));
+	        		
 	        		if (serie == resultPtoVta[i].getValue(row[0])) {
 						puntoDeVentaIdWS = resultPtoVta[i].getValue(row[1]);
 		            }
@@ -183,6 +182,7 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 						var validador = xmlEnvio.split('-VALI-')[1];
             			var valiLast = '-VALI-'+validador+'-VALI-';
             			xmlEnvio = xmlEnvio.replace(valiLast,'');
+                     
 						if(validador !=null && validador!=''){
 							InvoiceLine_temp = InvoiceLine[j];
 							var montoDesc = InvoiceLine_temp.split('-MONTODESC-')[1];
@@ -192,11 +192,16 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 								montoDesc= parseFloat(montoDesc);
 								montoDescTot = montoDescTot + montoDesc;
 								montoDesc=montoDesc.toFixed(2);
+                              	montoDesc=convertirNumero(montoDesc);
 								montosDesc=montosDesc + '-'+montoDesc+'/';
 								porcentajes=porcentajes+'-100%/';
-
+								
 							}
 						}
+                      	if(validador=='0'){
+                         		montosDesc=montosDesc + '0/';
+								porcentajes=porcentajes+'0/';
+                        }
 					}	
 				}
             montosDesc=montosDesc.substring(0, montosDesc.length-1);
@@ -237,6 +242,7 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 					if(CodTipoAfecto != null && CodTipoAfecto != ''){
 						CodTipoAfecto = CodTipoAfecto.substring(0, CodTipoAfecto.length-2);
 						MONTOLINEA    = parseFloat(InvoiceLine_temp.split('-MONTOLINEA-')[1]).toFixed(2);
+                       xmlEnvio = xmlEnvio.replace('*Ezi5*', MONTOLINEA);
 						if (CodTipoAfecto == '10') {
 							monto_1001    = monto_1001 + parseFloat(MONTOLINEA);
 						}else if (CodTipoAfecto == '40') {
@@ -258,11 +264,12 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 				xmlEnvio = xmlEnvio.replace('*AXL*', "Entro a DiscRate");
 				xmlEnvio = xmlEnvio.replace('*SLASH*', DiscRate);
 				DiscRate   = Math.abs(DiscRate);
+              xmlEnvio = xmlEnvio.replace('*1001*', DiscRate);
 				monto_1001 = monto_1001 - monto_1001*DiscRate;
 				monto_1002 = monto_1002 - monto_1002*DiscRate;
 				monto_1003 = monto_1003 - monto_1003*DiscRate;
 			}
-			xmlEnvio = xmlEnvio.replace('*1001*', monto_1001);
+			
 			montoo_1001=monto_1001;
 			monto_1001 = monto_1001.toFixed(2);
 			monto_1002 = monto_1002.toFixed(2);

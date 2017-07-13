@@ -217,6 +217,12 @@ function lmry_fact_electronica_schdl(type) {
 					//var codPuerto		=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[37]);
 					
 					tranID				=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[29]);
+					
+					//Orden Compra
+					var OrdenCompra		=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[35]);
+					var FechaOCompra		=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[36]);
+					var ComprobVenta		=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[37]);
+					var MarcaVehiculo	=	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[39]);
 																
 				}		
 
@@ -235,8 +241,12 @@ function lmry_fact_electronica_schdl(type) {
 				detalleItem.push(descripcion);
 				var codProducto		= 	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[33]);
 				detalleItem.push(codProducto);
+				var SerieProducto	= 	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[34]);
+				detalleItem.push(SerieProducto);
+				var NotaProducto		= 	busquedaTransaccionesResult[cuentaDetalle].getValue(columnsDetalle[38]);
+				detalleItem.push(NotaProducto);
 				
-
+				
 				arrayItems.push(detalleItem);			
 			}
 
@@ -364,9 +374,23 @@ function lmry_fact_electronica_schdl(type) {
 			//Datos del item
 			'\t<cac:DespatchLine>\n';
 
+			var SerieItem = '';
+			var NotaItem = '';
+			
 			for (var i = 0; i < arrayItems.length; i++) {
 				var detalle = arrayItems[i];
 
+				if (i==arrayItems.length)
+				{ 
+					SerieItem += detalle[4] ;
+					NotaItem += detalle[5] ;
+				}
+				else
+				{
+					SerieItem += detalle[4] + '|' ;
+					NotaItem += detalle[5] + '|' ;
+				}
+				
 				xmlEnvio += 
 						'\t\t<cbc:ID>'+(i+1)+'</cbc:ID>\n'+
 						'\t\t<cbc:DeliveredQuantity unitCode="KGM">'+detalle[1]+'</cbc:DeliveredQuantity>\n'+
@@ -382,7 +406,20 @@ function lmry_fact_electronica_schdl(type) {
 			}
 			xmlEnvio += 
 					'\t</cac:DespatchLine>\n'+
-					'</DespatchAdvice>\n';			
+					'</DespatchAdvice>\n' +
+					
+			//TextoLibres
+			'\t<TextosLibres>\n' +
+				'\t\t</TextoLibre1>'+dirPartida+'</TextoLibre1>\n' +
+				'\t\t</TextoLibre2>'+dniChofer+'</TextoLibre2>\n' +
+				'\t\t</TextoLibre3>'+MarcaVehiculo+'</TextoLibre3>\n' +
+				'\t\t</TextoLibre4>'+placa+'</TextoLibre4>\n' +
+				'\t\t</TextoLibre5>'+ComprobVenta+'</TextoLibre5>\n' +
+				'\t\t</TextoLibre6>'+OrdenCompra+'</TextoLibre6>\n' +
+				'\t\t</TextoLibre7>'+FechaOCompra+'</TextoLibre7>\n' +
+				'\t\t</TextoLibre8>'+SerieItem+'</TextoLibre8>\n' +
+				'\t\t</TextoLibre9>'+NotaItem+'</TextoLibre9>\n' +
+			'\t</TextosLibres>\n' ;			
 
 
 			
