@@ -45,12 +45,14 @@ function BM_main_schedule()
 					var auxiliar = new Array();
 					var ID = objResult[fil].getValue(columnsDetalle[0]);
 					var serie = objResult[fil].getText(columnsDetalle[1]);
+					var serieid = objResult[fil].getValue(columnsDetalle[1])
 					var preimpreso  = objResult[fil].getValue(columnsDetalle[2]);
 					var subsi 	 = objResult[fil].getValue(columnsDetalle[3]);
 					var cliente  = objResult[fil].getValue(columnsDetalle[4]);
 					var fecha 	 = objResult[fil].getValue(columnsDetalle[5]);
-					var codigo 	 = objResult[fil].getValue(columnsDetalle[7]);
-					var impuesto = objResult[fil].getText(columnsDetalle[8]);
+					var codigoid 	 = objResult[fil].getValue(columnsDetalle[6]);
+					var codigo = objResult[fil].getValue(columnsDetalle[7]);
+					var impuesto = objResult[fil].getValue(columnsDetalle[8]);
 					var importe  = objResult[fil].getValue(columnsDetalle[9]);
 					var item 	 = objResult[fil].getValue(columnsDetalle[10]);
 					nlapiLogExecution('ERROR', 'importe', importe);
@@ -122,8 +124,9 @@ function BM_main_schedule()
 		} // Ejecuta la busqueda
 		
 		// Crea la factura si esta aprobado y activo el feature crear factura
+		nlapiLogExecution('ERROR','HOLI','HOli');
 		
-			var idinvoice = BM_invoice( subsi, fecha,codigo,serie,primerPreimpreso,ultimoPreimpreso,itemsBus);
+			var idinvoice = BM_invoice( cliente, fecha,codigoid,serieid,primerPreimpreso,ultimoPreimpreso,itemsBus);
 			nlapiLogExecution('ERROR','idinvoice',idinvoice);	
 			
 		
@@ -131,14 +134,14 @@ function BM_main_schedule()
 		nlapiLogExecution('ERROR', 'BM_main_schedule -> ', 'Proceso Terminado...');
  	}catch(err){		
 		// Envia correo de error al usuario
-		//law360_sendemail(err + ' [SBM_main_schedule]', LMRY_script);		
+		nlapiLogExecution('ERROR','ERROR',err);	
 	}
 }
 
 /* ------------------------------------------------------------------------------------------------------
  * Funcion para crear la factura de un estado de cuenta de tiempos
  * --------------------------------------------------------------------------------------------------- */
-function BM_invoice(Subsi,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, ArrItem)
+function BM_invoice(Cliente,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, ArrItem)
 {	
 			
 		//var invoice_entity  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_expense_entity');
@@ -147,7 +150,7 @@ function BM_invoice(Subsi,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, Arr
 		var idRecord = 0;
 
 		// Valida que este configurado para la generacion de factura
-		if (Subsi=='' || DocuTipo==null || DocuSeri=='' ){
+		if (Cliente=='' || DocuTipo==null || DocuSeri=='' ){
 			// Log de Errores
 			nlapiLogExecution('ERROR', 'law360_invoice - Falta configurar parametros-> ', DocuSeri + ' , ' + Fecha);
 			
@@ -160,14 +163,22 @@ function BM_invoice(Subsi,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, Arr
 
 		/**********************************************
 		 * Crea el nuevo invoice 
-		 *********************************************/ 
+		 *********************************************/
+		nlapiLogExecution('ERROR','subsi',Cliente);
+		nlapiLogExecution('ERROR','Fecha',Fecha);
+		nlapiLogExecution('ERROR','DocuTipo',DocuTipo);
+		nlapiLogExecution('ERROR','DocuSerie',DocuSeri);
+		nlapiLogExecution('ERROR','PrimerNumero',PrimerNumero);
+		nlapiLogExecution('ERROR','UltimoNumero',UltimoNumero);
+		
+
 		var NewRecord = nlapiCreateRecord('invoice');
-			NewRecord.setFieldValue('subsidiary',Subsi );		// Cliente
-			NewRecord.setFieldValue('', Fecha );		//Fecha	
+			NewRecord.setFieldValue('entity',Cliente );		// Cliente
+			NewRecord.setFieldValue('trandate', Fecha );		//Fecha	
 			NewRecord.setFieldValue('custbody_lmry_document_type', DocuTipo);		// Latam - Legal Document Type
 			NewRecord.setFieldValue('custbody_lmry_serie_doc_cxc', DocuSeri);		// Latam - Serie CxC
-			NewRecord.setFieldValue('', PrimerNumero);		// Latam - Numero Preimpreso
-			NewRecord.setFieldValue('', UltimoNumero);		// Latam - Numero Final Preimpreso
+			NewRecord.setFieldValue('custbody_lmry_num_preimpreso', PrimerNumero);		// Latam - Numero Preimpreso
+			NewRecord.setFieldValue('custbody_lmry_pe_num_final_preimpreso', UltimoNumero);		// Latam - Numero Final Preimpreso
 
 			for(var i=0; i<items.length; i++){
 
@@ -193,20 +204,28 @@ function BM_invoice(Subsi,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, Arr
 				*/
 				// Agrega el registro
 				NewRecord.setLineItemValue('item', 'quantity'	, i+1, 1);
-				NewRecord.setLineItemValue('item', 'item'		, i+1, items[i][0]);
+				NewRecord.setLineItemValue('item', 'item'		, i+1, '');
 				NewRecord.setLineItemValue('item', 'rate'		, i+1, items[i][1]);//total de los importes Registro
-				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, items[i][2]);
+				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, '');
 				//NewRecord.setLineItemValue('item', 'custcol_4601_witaxapplies', 1, 'F'); 	// With Holding Tax
-				NewRecord.setLineItemValue('item', ''	, i+1, items[i][3]); // TIPODOC
-				NewRecord.setLineItemValue('item', ''	, i+1, items[i][4]); // Serie
-				NewRecord.setLineItemValue('item', ''	, i+1, items[i][5]); // PRIMERO
-				NewRecord.setLineItemValue('item', ''	, i+1, items[i][6]); // ULTIMO
+				NewRecord.setLineItemValue('item', 'custcol_lmry_col_tipo_doc'	, i+1, items[i][3]); // TIPODOC
+				NewRecord.setLineItemValue('item', 'custcol_lmry_col_serie_cxc'	, i+1, items[i][4]); // Serie
+				NewRecord.setLineItemValue('item', 'custcol_lmry_col_num_ini'	, i+1, items[i][5]); // PRIMERO
+				NewRecord.setLineItemValue('item', 'custcol_lmry_col_num_fin'	, i+1, items[i][6]); // ULTIMO
 			}
 
 			
-
+nlapiLogExecution('ERROR','PASO','PASO');
+try{
 		// Graba el invoice nuevo
 		idRecord = nlapiSubmitRecord(NewRecord);
+		nlapiLogExecution('ERROR','PASO1','PASO1');
+
+}catch(err){
+
+	nlapiLogExecution('ERROR','ERRORPE', err);
+}
+		
 
 	// Devuel el id nuevo
 	return idRecord;
