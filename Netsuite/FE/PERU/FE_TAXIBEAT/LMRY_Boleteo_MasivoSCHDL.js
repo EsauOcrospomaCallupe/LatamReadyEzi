@@ -9,12 +9,15 @@
 // Recuperamos valores
 var objContext = nlapiGetContext(); 
 var LMRY_script = "LatamReady - PE Boleteo Masivo SCHDL";
-
+var FORMULARIO='';
+var ITEM='';
+var LOCATION='';
 
 // Empieza el proceso del Schedule
 function BM_main_schedule()
 {
 	try {	
+		getEnableFeatures();
 	 var itemsBus = new Array();		
 
 		// Ejecuta la busqueda
@@ -22,7 +25,6 @@ function BM_main_schedule()
 		var busquedaResult	= objResultSearch.runSearch();
 		var objResult	= busquedaResult.getResults(0, 100);
 		
-
 		if (objResult!='' && objResult!=null)
 		{
 			if (objResult.length>0)
@@ -30,7 +32,6 @@ function BM_main_schedule()
 				// Log de Errores
 				nlapiLogExecution('ERROR', 'customrecord_lmry_pe_ei_boleteo_masivo: length -> ', objResult.length);
 
-				
 				// Procesa la busqueda consultada
 				var cont=0;
 				var fil = 0;
@@ -43,19 +44,20 @@ function BM_main_schedule()
 					
 					// Estado de cuenta a Procesar
 					var auxiliar = new Array();
-					var ID = objResult[fil].getValue(columnsDetalle[0]);
-					var serie = objResult[fil].getText(columnsDetalle[1]);
-					var serieid = objResult[fil].getValue(columnsDetalle[1])
-					var preimpreso  = objResult[fil].getValue(columnsDetalle[2]);
-					var subsi 	 = objResult[fil].getValue(columnsDetalle[3]);
-					var cliente  = objResult[fil].getValue(columnsDetalle[4]);
-					var fecha 	 = objResult[fil].getValue(columnsDetalle[5]);
-					var codigoid 	 = objResult[fil].getValue(columnsDetalle[6]);
-					var codigo = objResult[fil].getValue(columnsDetalle[7]);
-					var impuesto = objResult[fil].getValue(columnsDetalle[8]);
-					var importe  = objResult[fil].getValue(columnsDetalle[9]);
-					var item 	 = objResult[fil].getValue(columnsDetalle[10]);
+					var ID         =  objResult[fil].getValue(columnsDetalle[0]);
+					var serie      =  objResult[fil].getText(columnsDetalle[1]);
+					var serieid    =  objResult[fil].getValue(columnsDetalle[1])
+					var preimpreso =  objResult[fil].getValue(columnsDetalle[2]);
+					var subsi 	   =  objResult[fil].getValue(columnsDetalle[3]);
+					var cliente    =  objResult[fil].getValue(columnsDetalle[4]);
+					var fecha 	   =  objResult[fil].getValue(columnsDetalle[5]);
+					var codigoid   =  objResult[fil].getValue(columnsDetalle[6]);
+					var codigo 	   =  objResult[fil].getValue(columnsDetalle[7]);
+					var impuesto   =  objResult[fil].getValue(columnsDetalle[8]);
+					var importe    =  objResult[fil].getValue(columnsDetalle[9]);
+					var item 	   =  objResult[fil].getValue(columnsDetalle[10]);
 					nlapiLogExecution('ERROR', 'importe', importe);
+
 					if(fil==0){
 						auxiliar[0]=item;
 						auxiliar[1]=parseFloat(importe);
@@ -67,14 +69,14 @@ function BM_main_schedule()
 
 						itemsBus[cont]= auxiliar;
 						cont++;
-						primerPreimpreso= preimpreso;
+						primerPreimpreso= Preimpres;
 						nlapiLogExecution('ERROR','1',primerPreimpreso);
 					}else{
+
 						if(fil==objResult.length-1){
 							ultimoPreimpreso= preimpreso;
 							nlapiLogExecution('ERROR','2',ultimoPreimpreso);
 						}
-
 
 						nlapiLogExecution('ERROR','2.5',itemsBus.length);
 						
@@ -96,24 +98,19 @@ function BM_main_schedule()
 							nlapiLogExecution('ERROR','5',itemsBus[i][6]);
 
 						}else{
-							itemsBus[itemsBus.length+1][0]=item;
-							itemsBus[itemsBus.length+1][1]=importe;
-							itemsBus[itemsBus.length+1][2]=impuesto;
-							itemsBus[itemsBus.length+1][3]=codigo;
-							itemsBus[itemsBus.length+1][4]=serie;
-							itemsBus[itemsBus.length+1][5]=preimpreso;
-							itemsBus[itemsBus.length+1][6]=preimpreso;
+							itemsBus[cont][0]=item;
+							itemsBus[cont][1]=importe;
+							itemsBus[cont][2]=impuesto;
+							itemsBus[cont][3]=codigo;
+							itemsBus[cont][4]=serie;
+							itemsBus[cont][5]=preimpreso;
+							itemsBus[cont][6]=preimpreso;
 
 							nlapiLogExecution('ERROR','ENTRONUEVO','ENTRONUEVO');
 						}
 					}						
 						// Siguiente Registro
 						fil++;
-
-						// Ultima linea
-						if (fil==objResult.length){ break; }
-
-						
 						
 				} // Procesa la busqueda consultada
 
@@ -121,14 +118,12 @@ function BM_main_schedule()
 					var objResult	= busquedaResult.getResults(1000, 1100);
 				}
 			}
-		} // Ejecuta la busqueda
-		
-		// Crea la factura si esta aprobado y activo el feature crear factura
-		nlapiLogExecution('ERROR','HOLI','HOli');
-		
-			var idinvoice = BM_invoice( cliente, fecha,codigoid,serieid,primerPreimpreso,ultimoPreimpreso,itemsBus);
-			nlapiLogExecution('ERROR','idinvoice',idinvoice);	
-			
+		} // Termina la busqueda
+				
+		nlapiLogExecution('ERROR','HOLI','HOLI');
+		// Crea la factura
+		var idinvoice = BM_invoice( cliente, fecha,codigoid,serieid,primerPreimpreso,ultimoPreimpreso,itemsBus);
+		nlapiLogExecution('ERROR','idinvoice',idinvoice);	
 		
 		// Log de Errores
 		nlapiLogExecution('ERROR', 'BM_main_schedule -> ', 'Proceso Terminado...');
@@ -173,7 +168,9 @@ function BM_invoice(Cliente,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, A
 		
 
 		var NewRecord = nlapiCreateRecord('invoice');
+			NewRecord.setFieldValue('customform',FORMULARIO); //Formulario
 			NewRecord.setFieldValue('entity',Cliente );		// Cliente
+			NewRecord.setFieldValue('location',LOCATION);// Location
 			NewRecord.setFieldValue('trandate', Fecha );		//Fecha	
 			NewRecord.setFieldValue('custbody_lmry_document_type', DocuTipo);		// Latam - Legal Document Type
 			NewRecord.setFieldValue('custbody_lmry_serie_doc_cxc', DocuSeri);		// Latam - Serie CxC
@@ -190,23 +187,11 @@ function BM_invoice(Cliente,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, A
 				nlapiLogExecution('ERROR','item5',items[i][5]);
 				nlapiLogExecution('ERROR','item6',items[i][6]);
 
-				/*
 				// Agrega el registro
 				NewRecord.setLineItemValue('item', 'quantity'	, i+1, 1);
-				NewRecord.setLineItemValue('item', 'item'		, i+1, invoice_item);
-				NewRecord.setLineItemValue('item', 'rate'		, i+1, montoTotReg);//total de los importes Registro
-				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, invoice_taxc);
-				//NewRecord.setLineItemValue('item', 'custcol_4601_witaxapplies', 1, 'F'); 	// With Holding Tax
-				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, DocuTipo); 
-				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, DocuSeri);
-				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, invoice_NumeroIni);
-				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, invoice_NumeroFin);
-				*/
-				// Agrega el registro
-				NewRecord.setLineItemValue('item', 'quantity'	, i+1, 1);
-				NewRecord.setLineItemValue('item', 'item'		, i+1, '');
+				NewRecord.setLineItemValue('item', 'item'		, i+1, ITEM);
 				NewRecord.setLineItemValue('item', 'rate'		, i+1, items[i][1]);//total de los importes Registro
-				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, '');
+				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, '1019');
 				//NewRecord.setLineItemValue('item', 'custcol_4601_witaxapplies', 1, 'F'); 	// With Holding Tax
 				NewRecord.setLineItemValue('item', 'custcol_lmry_col_tipo_doc'	, i+1, items[i][3]); // TIPODOC
 				NewRecord.setLineItemValue('item', 'custcol_lmry_col_serie_cxc'	, i+1, items[i][4]); // Serie
@@ -215,7 +200,7 @@ function BM_invoice(Cliente,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, A
 			}
 
 			
-nlapiLogExecution('ERROR','PASO','PASO');
+
 try{
 		// Graba el invoice nuevo
 		idRecord = nlapiSubmitRecord(NewRecord);
@@ -225,9 +210,34 @@ try{
 
 	nlapiLogExecution('ERROR','ERRORPE', err);
 }
-		
-
 	// Devuel el id nuevo
 	return idRecord;
+	
+}
+
+function getEnableFeatures(){
+
+	// Registro Personalizado LatamReady - PE Enable Feature FEL
+	var coltabla = new Array();
+		coltabla[0] =  new nlobjSearchColumn('custrecord_lmry_pe_ei_temp_factu');
+		coltabla[1] =  new nlobjSearchColumn('custrecord_lmry_pe_ei_items');
+		coltabla[2] =  new nlobjSearchColumn('custrecord_lmry_pe_ei_location');
+
+	enabFeatureRecord = nlapiSearchRecord( 'customrecord_lmry_pe_ei_enable_feature'
+		  , null
+		  , null
+		  , coltabla
+		);
+
+	if (enabFeatureRecord != null && enabFeatureRecord != '') {
+
+		FORMULARIO     = enabFeatureRecord[0].getValue('custrecord_lmry_pe_ei_temp_factu');
+		nlapiLogExecution('ERROR', 'FORMULARIO', FORMULARIO);
+		ITEM = enabFeatureRecord[0].getValue('custrecord_lmry_pe_ei_items');
+		nlapiLogExecution('ERROR', 'ITEM', ITEM);
+		LOCATION = enabFeatureRecord[0].getValue('custrecord_lmry_pe_ei_location');
+		nlapiLogExecution('ERROR', 'LOCATION', LOCATION);
+
+	}	
 	
 }

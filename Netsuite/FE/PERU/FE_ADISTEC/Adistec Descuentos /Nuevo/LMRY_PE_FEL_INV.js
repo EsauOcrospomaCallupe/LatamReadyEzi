@@ -209,8 +209,7 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
             xmlEnvio = xmlEnvio.replace('-PORCENTAJES-',montosDesc);
             xmlEnvio = xmlEnvio.replace('-MONTOSDESC-',porcentajes);
             descGlo= descCab+montoDescTot;
-            descGlo = descGlo.toFixed(2);
-            xmlEnvio = xmlEnvio.replace(desclast,descGlo);
+         
             reg = new RegExp('-MONTODESC-', "g");
 			xmlEnvio = xmlEnvio.replace(reg, '');
 
@@ -282,6 +281,15 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 			xmlEnvio = xmlEnvio.replace('-MONTO1004-', monto_1004);
 			reg = new RegExp('-MONTOLINEA-', "g");
 			xmlEnvio = xmlEnvio.replace(reg, '');
+            var montoSub = montoo_1001-descGlo;
+            montoSub = montoSub.toFixed(2);
+          montoSub = convertirNumero(montoSub);
+            descGlo = descGlo.toFixed(2);
+            xmlEnvio = xmlEnvio.replace('-MONTODESCN-',descGlo);
+            xmlEnvio = xmlEnvio.replace('-MONTO1001N-',monto_1001);
+           
+            xmlEnvio = xmlEnvio.replace('-MONTOSUBTOT-',montoSub);
+            xmlEnvio = xmlEnvio.replace(desclast,descGlo);
 
 
             /***************************************************************************/

@@ -27,8 +27,8 @@
 					<sac:AdditionalMonetaryTotal>
 						<cbc:ID>2003</cbc:ID>
 						<!--Codigo de tipo de elemento tabla 14-->
-						<cbc:PayableAmount currencyID="${currency}">${transaction.custbody_lmry_wtax_amount?string["#.##"]}</cbc:PayableAmount>
-						<cbc:Percent>-PORCENTAJE-${transaction.custbody_lmry_wtax_rate?string["#.##"]}-PORCENTAJE-</cbc:Percent>
+						<cbc:PayableAmount currencyID="${currency}">-MONTODET-${transaction.total?c?number?string["#.##"]}-MONTODET-</cbc:PayableAmount>
+						<cbc:Percent>-PORCENTAJE-${transaction.custbody_lmry_porcentaje_detraccion?string["#.##"]}-PORCENTAJE-</cbc:Percent>
 						<!--Monto de la detraccion-->
 					</sac:AdditionalMonetaryTotal>
 					<sac:AdditionalProperty>
@@ -88,7 +88,7 @@
 				<cbc:ID>-UBIGEO-</cbc:ID>
 				<cbc:StreetName>${transaction.subsidiary.address1}</cbc:StreetName>
 				<cbc:CityName>${transaction.subsidiary.city}</cbc:CityName>
-				<cbc:CountrySubentity>-DETRA-${transaction.custbody_lmry_wtax_code_des}-DETRA-</cbc:CountrySubentity>
+				<cbc:CountrySubentity>-DETRA-${transaction.custbody_lmry_concepto_detraccion}-DETRA-</cbc:CountrySubentity>
 				<cbc:District>${transaction.subsidiary.address2}</cbc:District>
 				<cac:Country>
 					<cbc:IdentificationCode>PE</cbc:IdentificationCode>
@@ -130,7 +130,7 @@
 		<cbc:AllowanceTotalAmount currencyID="${currency}">${descGlobal?string["#.##"]}</cbc:AllowanceTotalAmount>
 		</#if>
 	</cac:LegalMonetaryTotal>
-	<!-- *Ezi4* *Ezi5*-->
+	<!-- *1001* *Ezi5*-->
 	<#list transaction.item as item>
 	<#if item.amount \gt 0>
 	<cac:InvoiceLine>
@@ -194,9 +194,14 @@
 	<TextoLibre11>${transaction.salesrep}</TextoLibre11>
 	<TextoLibre12>${transaction.custbody_lmry_informacion_adicional}</TextoLibre12>
 	<TextoLibre13></TextoLibre13>
-	<TextoLibre14>-PORCENTAJES-</TextoLibre14>
-	<TextoLibre15>-MONTOSDESC-</TextoLibre15>
-	
+	<TextoLibre14>-MONTODESCN-</TextoLibre14>
+	<TextoLibre15>-MONTO1001N-</TextoLibre15>
+	<TextoLibre16></TextoLibre16>
+	<TextoLibre17></TextoLibre17>
+	<TextoLibre18></TextoLibre18>
+	<TextoLibre19>-PORCENTAJES-</TextoLibre19>
+	<TextoLibre20>-MONTOSDESC-</TextoLibre20>
+	<TextoLibre21>-MONTOSUBTOT-</TextoLibre21>
 
 </TextosLibres>
 </informacionOrganismo>
