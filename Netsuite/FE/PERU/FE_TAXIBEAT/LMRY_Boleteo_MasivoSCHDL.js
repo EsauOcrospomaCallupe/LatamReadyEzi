@@ -45,7 +45,8 @@ function BM_main_schedule()
 					var vali=false;
 					var vali2=false;
 					var columnsDetalle	=	objResult[fil].getAllColumns();
-					
+					var ii=0;
+					var kk=0;
 					// Estado de cuenta a Procesar
 					var auxiliar = new Array();
 					var auxiliar2 = new Array();
@@ -61,7 +62,7 @@ function BM_main_schedule()
 					var impuesto   =  objResult[fil].getValue(columnsDetalle[8]);
 					var importe    =  objResult[fil].getValue(columnsDetalle[9]);
 					var item 	   =  objResult[fil].getValue(columnsDetalle[10]);
-					//nlapiLogExecution('ERROR', 'PREIMPRESO', preimpreso);
+					nlapiLogExecution('ERROR', 'PREIMPRESO', preimpreso);
 
 					if(fil==0){
 						
@@ -87,57 +88,61 @@ function BM_main_schedule()
 						contS++;
 					
 						
-						nlapiLogExecution('ERROR','1',preimpreso);
+						nlapiLogExecution('ERROR','1',serie);
 					}else{
 
+						nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4])
 						if(fil==objResult.length-1){
 							//ultimoPreimpreso= preimpreso;
 							nlapiLogExecution('ERROR','UltimoNumero',preimpreso);
 						}
 
-						//nlapiLogExecution('ERROR','CONT SERIE',contS-1);
-						//nlapiLogExecution('ERROR','CONT ITEM',ArrCabe[contS-1][6]);
+						nlapiLogExecution('ERROR','CONT SERIE',contS-1);
+						nlapiLogExecution('ERROR','CONT ITEM',ArrCabe[contS-1][6]);
 						
 						for(var i=0; i<contS; i++){
-							//nlapiLogExecution('ERROR','SERIE TABLA',ArrCabe[i][3]);
-							//nlapiLogExecution('ERROR','SERIE BUSQUEDA',serieid);
-							//nlapiLogExecution('ERROR','SERIE BUSQUEDA NM',serie);
+							nlapiLogExecution('ERROR','SERIE TABLA',ArrCabe[i][3]);
+							nlapiLogExecution('ERROR','SERIE BUSQUEDA',serieid);
+							nlapiLogExecution('ERROR','SERIE BUSQUEDA NM',serie);
 							if(ArrCabe[i][3]==serieid){
 
 								vali=true;
-								//nlapiLogExecution('ERROR','3',i);
+								ii=i;
+								nlapiLogExecution('ERROR','3',i);
 								break;
+
 							}
 
 						}
 						if(vali){
-							ArrCabe[i][5]=preimpreso;
+							ArrCabe[ii][5]=preimpreso;
 
-							for(var k=0;k<ArrCabe[i][6];k++){
-								//nlapiLogExecution('ERROR','IMPUESTO TABLA',ArrItem[i][k][2]);
-								//nlapiLogExecution('ERROR','IMPUESTO BUSQUE',impuesto);
-								
-								if(ArrItem[i][k][2]==impuesto){
+							for(var k=0;k<ArrCabe[ii][6];k++){
+								nlapiLogExecution('ERROR','IMPUESTO TABLA',ArrItem[i][k][2]);
+								nlapiLogExecution('ERROR','IMPUESTO BUSQUE',impuesto);
+
+								if(ArrItem[ii][k][2]==impuesto){
 									vali2=true;
-									//nlapiLogExecution('ERROR','4',k);
+									kk=k;
+									nlapiLogExecution('ERROR','4',k);
 									break;
 								}
 							}
 
 							if(vali2){
-								ArrItem[i][k][6]=preimpreso;
-								ArrItem[i][k][1]= ArrItem[i][k][1]+parseFloat(importe);
-								//nlapiLogExecution('ERROR','MISMO IMPUESTO','MISMO IMPUESTO')
+								ArrItem[ii][kk][6]=preimpreso;
+								ArrItem[ii][kk][1]= ArrItem[ii][kk][1]+parseFloat(importe);
+								nlapiLogExecution('ERROR','MISMO IMPUESTO','MISMO IMPUESTO')
 
 							}else{
-								nlapiLogExecution('ERROR','3',i);
-								nlapiLogExecution('ERROR','4',k);
-								nlapiLogExecution('ERROR','TEFITA1',ArrItem[i][0][2]);
-								nlapiLogExecution('ERROR','TEFITA',ArrItem[i][1][2]);
+								nlapiLogExecution('ERROR','3',ii);
+								nlapiLogExecution('ERROR','4',kk);
+								nlapiLogExecution('ERROR','TEFITA1',ArrItem[ii][0][2]);
 								
-								nlapiLogExecution('ERROR','NUEVO ITEM1','NUEVO ITEM1');
+								
+								nlapiLogExecution('ERROR','NUEVO ITEM1',ArrCabe[ii][6]);
 							
-								auxiliar2[0]=ArrCabe[i][6]+1;
+								auxiliar2[0]=ArrCabe[ii][6]+1;
 								auxiliar2[1]=parseFloat(importe);
 								auxiliar2[2]=impuesto;
 								auxiliar2[3]=codigo;
@@ -145,15 +150,16 @@ function BM_main_schedule()
 								auxiliar2[5]=preimpreso;
 								auxiliar2[6]=preimpreso;
 
-								itemsBus[k+1]= auxiliar2;
-								ArrItem[i] = itemsBus;
-								ArrCabe[i][6]++;
-								nlapiLogExecution('ERROR','NUEVO ITEM','NUEVO ITEM');
+								itemsBus[ArrCabe[ii][6]]= auxiliar2;
+								ArrItem[ii] = itemsBus;
+								ArrCabe[ii][6]++;
+								nlapiLogExecution('ERROR','TEFITA',ArrItem[ii][1][2]);
+								nlapiLogExecution('ERROR','NUEVO ITEM',ArrCabe[ii][6]);
 
 							}
 
 						}else{
-							nlapiLogExecution('ERROR','ENTROITEM','ENTROCABITEM');
+							nlapiLogExecution('ERROR','ENTROITEM',contS);
 							auxiliar[0]=cliente;
 							auxiliar[1]=fecha;
 							auxiliar[2]=codigoid;
@@ -175,7 +181,7 @@ function BM_main_schedule()
 							ArrItem[contS] = itemsBus;
 							contS++;
 									
-							nlapiLogExecution('ERROR','NUEVOSERIE','NUEVOSERIE');
+							nlapiLogExecution('ERROR','NUEVOSERIE',contS);
 						}
 					}						
 						// Siguiente Registro
