@@ -18,7 +18,7 @@ function BM_main_schedule()
 {
 	try {	
 		getEnableFeatures();
-	 	var itemsBus = new Array();	
+	 	
 	 	var ArrCabe = new Array();	
 	 	var ArrItem = new Array();
 		// Ejecuta la busqueda
@@ -50,6 +50,7 @@ function BM_main_schedule()
 					// Estado de cuenta a Procesar
 					var auxiliar = new Array();
 					var auxiliar2 = new Array();
+					var itemsBus = new Array();	
 					var ID         =  objResult[fil].getValue(columnsDetalle[0]);
 					var serie      =  objResult[fil].getText(columnsDetalle[1]);
 					var serieid    =  objResult[fil].getValue(columnsDetalle[1])
@@ -91,7 +92,7 @@ function BM_main_schedule()
 						nlapiLogExecution('ERROR','1',serie);
 					}else{
 
-						nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4])
+						nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
 						if(fil==objResult.length-1){
 							//ultimoPreimpreso= preimpreso;
 							nlapiLogExecution('ERROR','UltimoNumero',preimpreso);
@@ -155,6 +156,7 @@ function BM_main_schedule()
 								ArrCabe[ii][6]++;
 								nlapiLogExecution('ERROR','TEFITA',ArrItem[ii][1][2]);
 								nlapiLogExecution('ERROR','NUEVO ITEM',ArrCabe[ii][6]);
+								nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
 
 							}
 
@@ -168,6 +170,7 @@ function BM_main_schedule()
 							auxiliar[5]=preimpreso;
 							auxiliar[6]=1;
 							ArrCabe[contS]=auxiliar;
+							nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
 
 							auxiliar2[0]='1';
 							auxiliar2[1]=parseFloat(importe);
@@ -179,6 +182,8 @@ function BM_main_schedule()
 
 							itemsBus[0]= auxiliar2;
 							ArrItem[contS] = itemsBus;
+							nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
+							nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[1][0][4]);
 							contS++;
 									
 							nlapiLogExecution('ERROR','NUEVOSERIE',contS);
