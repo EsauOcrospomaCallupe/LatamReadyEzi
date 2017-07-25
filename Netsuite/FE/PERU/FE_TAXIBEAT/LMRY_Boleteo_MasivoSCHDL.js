@@ -18,12 +18,13 @@ function BM_main_schedule()
 {
 	try {	
 		getEnableFeatures();
-	 var itemsBus = new Array();		
-
+	 	var itemsBus = new Array();	
+	 	var ArrCabe = new Array();	
+	 	var ArrItem = new Array();
 		// Ejecuta la busqueda
 		var objResultSearch = nlapiLoadSearch('customrecord_lmry_pe_ei_boleteo_masivo','customsearch_lmry_pe_ei_boleteo_masivo');	
 		var busquedaResult	= objResultSearch.runSearch();
-		var objResult	= busquedaResult.getResults(0, 100);
+		var objResult	= busquedaResult.getResults(0, 1000);
 		
 		if (objResult!='' && objResult!=null)
 		{
@@ -33,17 +34,21 @@ function BM_main_schedule()
 				nlapiLogExecution('ERROR', 'customrecord_lmry_pe_ei_boleteo_masivo: length -> ', objResult.length);
 
 				// Procesa la busqueda consultada
-				var cont=0;
+				var contS=0;
+				var contI=0;
+
 				var fil = 0;
 				var primerPreimpreso ='';
 				var ultimoPreimpreso ='';
 				while ( fil<objResult.length )
 				{
 					var vali=false;
+					var vali2=false;
 					var columnsDetalle	=	objResult[fil].getAllColumns();
 					
 					// Estado de cuenta a Procesar
 					var auxiliar = new Array();
+					var auxiliar2 = new Array();
 					var ID         =  objResult[fil].getValue(columnsDetalle[0]);
 					var serie      =  objResult[fil].getText(columnsDetalle[1]);
 					var serieid    =  objResult[fil].getValue(columnsDetalle[1])
@@ -56,57 +61,121 @@ function BM_main_schedule()
 					var impuesto   =  objResult[fil].getValue(columnsDetalle[8]);
 					var importe    =  objResult[fil].getValue(columnsDetalle[9]);
 					var item 	   =  objResult[fil].getValue(columnsDetalle[10]);
-					nlapiLogExecution('ERROR', 'importe', importe);
+					//nlapiLogExecution('ERROR', 'PREIMPRESO', preimpreso);
 
 					if(fil==0){
-						auxiliar[0]=item;
-						auxiliar[1]=parseFloat(importe);
-						auxiliar[2]=impuesto;
-						auxiliar[3]=codigo;
-						auxiliar[4]=serie;
+						
+						auxiliar[0]=cliente;
+						auxiliar[1]=fecha;
+						auxiliar[2]=codigoid;
+						auxiliar[3]=serieid;
+						auxiliar[4]=preimpreso;
 						auxiliar[5]=preimpreso;
-						auxiliar[6]=preimpreso;
+						auxiliar[6]=1;
+						ArrCabe[contS]=auxiliar;
 
-						itemsBus[cont]= auxiliar;
-						cont++;
-						primerPreimpreso= Preimpres;
-						nlapiLogExecution('ERROR','1',primerPreimpreso);
+						auxiliar2[0]='1';
+						auxiliar2[1]=parseFloat(importe);
+						auxiliar2[2]=impuesto;
+						auxiliar2[3]=codigo;
+						auxiliar2[4]=serie;
+						auxiliar2[5]=preimpreso;
+						auxiliar2[6]=preimpreso;
+
+						itemsBus[0]= auxiliar2;
+						ArrItem[contS] = itemsBus;
+						contS++;
+					
+						
+						nlapiLogExecution('ERROR','1',preimpreso);
 					}else{
 
 						if(fil==objResult.length-1){
-							ultimoPreimpreso= preimpreso;
-							nlapiLogExecution('ERROR','2',ultimoPreimpreso);
+							//ultimoPreimpreso= preimpreso;
+							nlapiLogExecution('ERROR','UltimoNumero',preimpreso);
 						}
 
-						nlapiLogExecution('ERROR','2.5',itemsBus.length);
+						//nlapiLogExecution('ERROR','CONT SERIE',contS-1);
+						//nlapiLogExecution('ERROR','CONT ITEM',ArrCabe[contS-1][6]);
 						
-						for(var i=0; i<itemsBus.length; i++){
-							nlapiLogExecution('ERROR','2.6',itemsBus[i][4]);
-
-							if(itemsBus[i][4]==serie){
+						for(var i=0; i<contS; i++){
+							//nlapiLogExecution('ERROR','SERIE TABLA',ArrCabe[i][3]);
+							//nlapiLogExecution('ERROR','SERIE BUSQUEDA',serieid);
+							//nlapiLogExecution('ERROR','SERIE BUSQUEDA NM',serie);
+							if(ArrCabe[i][3]==serieid){
 
 								vali=true;
-								nlapiLogExecution('ERROR','3',i);
+								//nlapiLogExecution('ERROR','3',i);
 								break;
 							}
 
 						}
 						if(vali){
-							itemsBus[i][1]= itemsBus[i][1]+ parseFloat(importe);
-							itemsBus[i][6]= preimpreso;
-							nlapiLogExecution('ERROR','4',itemsBus[i][1]);
-							nlapiLogExecution('ERROR','5',itemsBus[i][6]);
+							ArrCabe[i][5]=preimpreso;
+
+							for(var k=0;k<ArrCabe[i][6];k++){
+								//nlapiLogExecution('ERROR','IMPUESTO TABLA',ArrItem[i][k][2]);
+								//nlapiLogExecution('ERROR','IMPUESTO BUSQUE',impuesto);
+								
+								if(ArrItem[i][k][2]==impuesto){
+									vali2=true;
+									//nlapiLogExecution('ERROR','4',k);
+									break;
+								}
+							}
+
+							if(vali2){
+								ArrItem[i][k][6]=preimpreso;
+								ArrItem[i][k][1]= ArrItem[i][k][1]+parseFloat(importe);
+								//nlapiLogExecution('ERROR','MISMO IMPUESTO','MISMO IMPUESTO')
+
+							}else{
+								nlapiLogExecution('ERROR','3',i);
+								nlapiLogExecution('ERROR','4',k);
+								nlapiLogExecution('ERROR','TEFITA1',ArrItem[i][0][2]);
+								nlapiLogExecution('ERROR','TEFITA',ArrItem[i][1][2]);
+								
+								nlapiLogExecution('ERROR','NUEVO ITEM1','NUEVO ITEM1');
+							
+								auxiliar2[0]=ArrCabe[i][6]+1;
+								auxiliar2[1]=parseFloat(importe);
+								auxiliar2[2]=impuesto;
+								auxiliar2[3]=codigo;
+								auxiliar2[4]=serie;
+								auxiliar2[5]=preimpreso;
+								auxiliar2[6]=preimpreso;
+
+								itemsBus[k+1]= auxiliar2;
+								ArrItem[i] = itemsBus;
+								ArrCabe[i][6]++;
+								nlapiLogExecution('ERROR','NUEVO ITEM','NUEVO ITEM');
+
+							}
 
 						}else{
-							itemsBus[cont][0]=item;
-							itemsBus[cont][1]=importe;
-							itemsBus[cont][2]=impuesto;
-							itemsBus[cont][3]=codigo;
-							itemsBus[cont][4]=serie;
-							itemsBus[cont][5]=preimpreso;
-							itemsBus[cont][6]=preimpreso;
+							nlapiLogExecution('ERROR','ENTROITEM','ENTROCABITEM');
+							auxiliar[0]=cliente;
+							auxiliar[1]=fecha;
+							auxiliar[2]=codigoid;
+							auxiliar[3]=serieid;
+							auxiliar[4]=preimpreso;
+							auxiliar[5]=preimpreso;
+							auxiliar[6]=1;
+							ArrCabe[contS]=auxiliar;
 
-							nlapiLogExecution('ERROR','ENTRONUEVO','ENTRONUEVO');
+							auxiliar2[0]='1';
+							auxiliar2[1]=parseFloat(importe);
+							auxiliar2[2]=impuesto;
+							auxiliar2[3]=codigo;
+							auxiliar2[4]=serie;
+							auxiliar2[5]=preimpreso;
+							auxiliar2[6]=preimpreso;
+
+							itemsBus[0]= auxiliar2;
+							ArrItem[contS] = itemsBus;
+							contS++;
+									
+							nlapiLogExecution('ERROR','NUEVOSERIE','NUEVOSERIE');
 						}
 					}						
 						// Siguiente Registro
@@ -118,12 +187,47 @@ function BM_main_schedule()
 					var objResult	= busquedaResult.getResults(1000, 1100);
 				}
 			}
+
 		} // Termina la busqueda
-				
+		for(var z=0;z<contS;z++){
+			
+				nlapiLogExecution('ERROR','CAB1',ArrCabe[z][0]);
+				nlapiLogExecution('ERROR','CAB2',ArrCabe[z][1]);
+				nlapiLogExecution('ERROR','CAB3',ArrCabe[z][2]);
+				nlapiLogExecution('ERROR','CAB4',ArrCabe[z][3]);
+				nlapiLogExecution('ERROR','CAB5',ArrCabe[z][4]);
+				nlapiLogExecution('ERROR','CAB6',ArrCabe[z][5]);
+				nlapiLogExecution('ERROR','CAB7',ArrCabe[z][6]);
+		}
+
+		for (var a=0;a<contS;a++){
+			for(var b=0;b<ArrCabe[a][6];b++){
+				nlapiLogExecution('ERROR','ITEM1',ArrItem[a][b][0]);
+				nlapiLogExecution('ERROR','ITEM2',ArrItem[a][b][1]);
+				nlapiLogExecution('ERROR','ITEM3',ArrItem[a][b][2]);
+				nlapiLogExecution('ERROR','ITEM4',ArrItem[a][b][3]);
+				nlapiLogExecution('ERROR','ITEM5',ArrItem[a][b][4]);
+				nlapiLogExecution('ERROR','ITEM6',ArrItem[a][b][5]);
+				nlapiLogExecution('ERROR','ITEM7',ArrItem[a][b][6]);
+			}
+		}
+		for(var i=0;i<contS;i++){
+			var clienteI=ArrCabe[i][0];
+			var fechaI=ArrCabe[i][1];
+			var codigoidI=ArrCabe[i][2];
+			var serieidI=ArrCabe[i][3];
+			var primerPreimpresoI=ArrCabe[i][4];
+			var ultimoPreimpresoI=ArrCabe[i][5];
+			var cantItems = ArrCabe[i][6];
+
+			var idinvoice = BM_invoice( clienteI, fechaI,codigoidI,serieidI,primerPreimpresoI,ultimoPreimpresoI,cantItems,ArrItem[i]);
+			nlapiLogExecution('ERROR','idinvoice',idinvoice);
+
+
+		}		
 		nlapiLogExecution('ERROR','HOLI','HOLI');
 		// Crea la factura
-		var idinvoice = BM_invoice( cliente, fecha,codigoid,serieid,primerPreimpreso,ultimoPreimpreso,itemsBus);
-		nlapiLogExecution('ERROR','idinvoice',idinvoice);	
+			
 		
 		// Log de Errores
 		nlapiLogExecution('ERROR', 'BM_main_schedule -> ', 'Proceso Terminado...');
@@ -136,7 +240,7 @@ function BM_main_schedule()
 /* ------------------------------------------------------------------------------------------------------
  * Funcion para crear la factura de un estado de cuenta de tiempos
  * --------------------------------------------------------------------------------------------------- */
-function BM_invoice(Cliente,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, ArrItem)
+function BM_invoice(Cliente,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero,CantItems, ArrItem)
 {	
 			
 		//var invoice_entity  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_expense_entity');
@@ -165,6 +269,7 @@ function BM_invoice(Cliente,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, A
 		nlapiLogExecution('ERROR','DocuSerie',DocuSeri);
 		nlapiLogExecution('ERROR','PrimerNumero',PrimerNumero);
 		nlapiLogExecution('ERROR','UltimoNumero',UltimoNumero);
+		nlapiLogExecution('ERROR','CantidadItems',CantItems);
 		
 
 		var NewRecord = nlapiCreateRecord('invoice');
@@ -177,7 +282,7 @@ function BM_invoice(Cliente,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, A
 			NewRecord.setFieldValue('custbody_lmry_num_preimpreso', PrimerNumero);		// Latam - Numero Preimpreso
 			NewRecord.setFieldValue('custbody_lmry_pe_num_final_preimpreso', UltimoNumero);		// Latam - Numero Final Preimpreso
 
-			for(var i=0; i<items.length; i++){
+			for(var i=0; i<CantItems; i++){
 
 				nlapiLogExecution('ERROR','item0',items[i][0]);
 				nlapiLogExecution('ERROR','item1',items[i][1]);
@@ -191,7 +296,7 @@ function BM_invoice(Cliente,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, A
 				NewRecord.setLineItemValue('item', 'quantity'	, i+1, 1);
 				NewRecord.setLineItemValue('item', 'item'		, i+1, ITEM);
 				NewRecord.setLineItemValue('item', 'rate'		, i+1, items[i][1]);//total de los importes Registro
-				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, '1019');
+				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, items[i][2]);//taxcode
 				//NewRecord.setLineItemValue('item', 'custcol_4601_witaxapplies', 1, 'F'); 	// With Holding Tax
 				NewRecord.setLineItemValue('item', 'custcol_lmry_col_tipo_doc'	, i+1, items[i][3]); // TIPODOC
 				NewRecord.setLineItemValue('item', 'custcol_lmry_col_serie_cxc'	, i+1, items[i][4]); // Serie
