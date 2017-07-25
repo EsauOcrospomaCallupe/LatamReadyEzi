@@ -12,6 +12,9 @@ var LMRY_script = "LatamReady - PE Boleteo Masivo SCHDL";
 var FORMULARIO='';
 var ITEM='';
 var LOCATION='';
+var intMaxReg = 1000;
+var intMinReg = 0;
+var bolStop = false;
 
 // Empieza el proceso del Schedule
 function BM_main_schedule()
@@ -21,27 +24,25 @@ function BM_main_schedule()
 	 	
 	 	var ArrCabe = new Array();	
 	 	var ArrItem = new Array();
+	 	var swPrimera = true;
+	 	var contS=0;
 		// Ejecuta la busqueda
 		var objResultSearch = nlapiLoadSearch('customrecord_lmry_pe_ei_boleteo_masivo','customsearch_lmry_pe_ei_boleteo_masivo');	
 		var busquedaResult	= objResultSearch.runSearch();
-		var objResult	= busquedaResult.getResults(0, 1000);
-		
-		if (objResult!='' && objResult!=null)
+
+		while (!bolStop)
 		{
-			if (objResult.length>0)
-			{
-				// Log de Errores
-				nlapiLogExecution('ERROR', 'customrecord_lmry_pe_ei_boleteo_masivo: length -> ', objResult.length);
-
+			// Retorno de 1000 Registro
+			var objResult = busquedaResult.getResults(intMinReg, intMaxReg);
+			if (objResult!=null && objResult!='') {
+				nlapiLogExecution('ERROR', 'CALCULANDO RANGO', intMinReg + ' - ' + intMaxReg);
+				// Filas
 				// Procesa la busqueda consultada
-				var contS=0;
-				var contI=0;
+				var intLength = objResult.length;
+				for (var fil = 0; fil < intLength; fil++){
+					// Log de Errores
+					nlapiLogExecution('ERROR', 'customrecord_lmry_pe_ei_boleteo_masivo: length -> ', objResult.length);
 
-				var fil = 0;
-				var primerPreimpreso ='';
-				var ultimoPreimpreso ='';
-				while ( fil<objResult.length )
-				{
 					var vali=false;
 					var vali2=false;
 					var columnsDetalle	=	objResult[fil].getAllColumns();
@@ -50,7 +51,8 @@ function BM_main_schedule()
 					// Estado de cuenta a Procesar
 					var auxiliar = new Array();
 					var auxiliar2 = new Array();
-					var itemsBus = new Array();	
+					var itemsBus = new Array();
+							
 					var ID         =  objResult[fil].getValue(columnsDetalle[0]);
 					var serie      =  objResult[fil].getText(columnsDetalle[1]);
 					var serieid    =  objResult[fil].getValue(columnsDetalle[1])
@@ -65,8 +67,8 @@ function BM_main_schedule()
 					var item 	   =  objResult[fil].getValue(columnsDetalle[10]);
 					nlapiLogExecution('ERROR', 'PREIMPRESO', preimpreso);
 
-					if(fil==0){
-						
+					if(swPrimera){
+						swPrimera = false;
 						auxiliar[0]=cliente;
 						auxiliar[1]=fecha;
 						auxiliar[2]=codigoid;
@@ -89,27 +91,27 @@ function BM_main_schedule()
 						contS++;
 					
 						
-						nlapiLogExecution('ERROR','1',serie);
+						//nlapiLogExecution('ERROR','1',serie);
 					}else{
 
-						nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
+						//nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
 						if(fil==objResult.length-1){
 							//ultimoPreimpreso= preimpreso;
 							nlapiLogExecution('ERROR','UltimoNumero',preimpreso);
 						}
 
-						nlapiLogExecution('ERROR','CONT SERIE',contS-1);
-						nlapiLogExecution('ERROR','CONT ITEM',ArrCabe[contS-1][6]);
+						//nlapiLogExecution('ERROR','CONT SERIE',contS-1);
+						//nlapiLogExecution('ERROR','CONT ITEM',ArrCabe[contS-1][6]);
 						
 						for(var i=0; i<contS; i++){
-							nlapiLogExecution('ERROR','SERIE TABLA',ArrCabe[i][3]);
-							nlapiLogExecution('ERROR','SERIE BUSQUEDA',serieid);
-							nlapiLogExecution('ERROR','SERIE BUSQUEDA NM',serie);
+							//nlapiLogExecution('ERROR','SERIE TABLA',ArrCabe[i][3]);
+							//nlapiLogExecution('ERROR','SERIE BUSQUEDA',serieid);
+							//nlapiLogExecution('ERROR','SERIE BUSQUEDA NM',serie);
 							if(ArrCabe[i][3]==serieid){
 
 								vali=true;
 								ii=i;
-								nlapiLogExecution('ERROR','3',i);
+								//nlapiLogExecution('ERROR','3',i);
 								break;
 
 							}
@@ -119,13 +121,13 @@ function BM_main_schedule()
 							ArrCabe[ii][5]=preimpreso;
 
 							for(var k=0;k<ArrCabe[ii][6];k++){
-								nlapiLogExecution('ERROR','IMPUESTO TABLA',ArrItem[i][k][2]);
-								nlapiLogExecution('ERROR','IMPUESTO BUSQUE',impuesto);
+								//nlapiLogExecution('ERROR','IMPUESTO TABLA',ArrItem[i][k][2]);
+								//nlapiLogExecution('ERROR','IMPUESTO BUSQUE',impuesto);
 
 								if(ArrItem[ii][k][2]==impuesto){
 									vali2=true;
 									kk=k;
-									nlapiLogExecution('ERROR','4',k);
+									//nlapiLogExecution('ERROR','4',k);
 									break;
 								}
 							}
@@ -133,15 +135,17 @@ function BM_main_schedule()
 							if(vali2){
 								ArrItem[ii][kk][6]=preimpreso;
 								ArrItem[ii][kk][1]= ArrItem[ii][kk][1]+parseFloat(importe);
-								nlapiLogExecution('ERROR','MISMO IMPUESTO','MISMO IMPUESTO')
+								//nlapiLogExecution('ERROR','MISMO IMPUESTO','MISMO IMPUESTO')
 
 							}else{
-								nlapiLogExecution('ERROR','3',ii);
-								nlapiLogExecution('ERROR','4',kk);
-								nlapiLogExecution('ERROR','TEFITA1',ArrItem[ii][0][2]);
+								//nlapiLogExecution('ERROR','3',ii);
+								//nlapiLogExecution('ERROR','4',kk);
+								//nlapiLogExecution('ERROR','TEFITA1',ArrItem[ii][0][2]);
 								
 								
-								nlapiLogExecution('ERROR','NUEVO ITEM1',ArrCabe[ii][6]);
+								//nlapiLogExecution('ERROR','NUEVO ITEM1',ArrCabe[ii][6]);
+
+
 							
 								auxiliar2[0]=ArrCabe[ii][6]+1;
 								auxiliar2[1]=parseFloat(importe);
@@ -150,18 +154,18 @@ function BM_main_schedule()
 								auxiliar2[4]=serie;
 								auxiliar2[5]=preimpreso;
 								auxiliar2[6]=preimpreso;
-
-								itemsBus[ArrCabe[ii][6]]= auxiliar2;
-								ArrItem[ii] = itemsBus;
+								
+								ArrItem[ii][ArrCabe[ii][6]] = auxiliar2;
 								ArrCabe[ii][6]++;
-								nlapiLogExecution('ERROR','TEFITA',ArrItem[ii][1][2]);
-								nlapiLogExecution('ERROR','NUEVO ITEM',ArrCabe[ii][6]);
-								nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
+								//nlapiLogExecution('ERROR','TEFITA',ArrItem[ii][1][2]);
+								//nlapiLogExecution('ERROR','NUEVO ITEM',ArrCabe[ii][6]);
+								//nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
+								//nlapiLogExecution('ERROR','HOLIBOLI1',ArrItem[0][1][4]);
 
 							}
 
 						}else{
-							nlapiLogExecution('ERROR','ENTROITEM',contS);
+							//nlapiLogExecution('ERROR','ENTROITEM',contS);
 							auxiliar[0]=cliente;
 							auxiliar[1]=fecha;
 							auxiliar[2]=codigoid;
@@ -170,7 +174,7 @@ function BM_main_schedule()
 							auxiliar[5]=preimpreso;
 							auxiliar[6]=1;
 							ArrCabe[contS]=auxiliar;
-							nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
+							//nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
 
 							auxiliar2[0]='1';
 							auxiliar2[1]=parseFloat(importe);
@@ -182,24 +186,27 @@ function BM_main_schedule()
 
 							itemsBus[0]= auxiliar2;
 							ArrItem[contS] = itemsBus;
-							nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
-							nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[1][0][4]);
+							//nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[0][0][4]);
+							//nlapiLogExecution('ERROR','HOLIBOLI',ArrItem[1][0][4]);
 							contS++;
 									
-							nlapiLogExecution('ERROR','NUEVOSERIE',contS);
+							//nlapiLogExecution('ERROR','NUEVOSERIE',contS);
 						}
-					}						
-						// Siguiente Registro
-						fil++;
-						
+					}											
 				} // Procesa la busqueda consultada
-
-				if(objResult.length==1000){
-					var objResult	= busquedaResult.getResults(1000, 1100);
+				// Quiebre de 1000 en 1000
+				intMinReg = intMaxReg; 
+				intMaxReg += 1000;
+				if (intLength<1000){
+					bolStop = true;
 				}
+				
+			} else {
+				bolStop = true;
 			}
+			
 
-		} // Termina la busqueda
+		} // Termina la el whileStop
 		for(var z=0;z<contS;z++){
 			
 				nlapiLogExecution('ERROR','CAB1',ArrCabe[z][0]);
