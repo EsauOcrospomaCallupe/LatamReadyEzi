@@ -12,22 +12,71 @@ var LMRY_script = "LatamReady - PE Boleteo Masivo SCHDL";
 var FORMULARIO='';
 var ITEM='';
 var LOCATION='';
+var CLIENTE='';
+var DEPA='';
 var intMaxReg = 1000;
 var intMinReg = 0;
 var bolStop = false;
+var LOGRECORD_ID= 'customrecord_lmry_pe_bol_mas_log';
+var id_BMlog='';
 
 // Empieza el proceso del Schedule
 function BM_main_schedule()
 {
 	try {	
 		getEnableFeatures();
+		var param_periodo     = objContext.getSetting('SCRIPT', 'custscript_lmry_pe_bol_periodo');
+		var periodoname = nlapiLookupField('accountingperiod', param_periodo, 'periodname');
+	 	var objResultSearch = nlapiLoadSearch('customrecord_lmry_pe_ei_boleteo_masivo','customsearch_lmry_pe_ei_boleteo_masivo');
+       objResultSearch.addFilter(new nlobjSearchFilter('custrecord_lmry_pe_ei_period', null, 'anyof', param_periodo));
+      var busquedaResult	= objResultSearch.runSearch();
+      var objResult = busquedaResult.getResults(0, 50);
+      
+			if (objResult!=null && objResult!='') {
+                var intLength = objResult.length;
+				for (var fil = 0; fil < intLength; fil++){
+                    var columnsDetalle	=	objResult[fil].getAllColumns();
+					var serie      =  objResult[fil].getText(columnsDetalle[0]);
+					var serieid    =  objResult[fil].getValue(columnsDetalle[0])
+					var preimpresoini =  objResult[fil].getValue(columnsDetalle[1]);
+					var subsi 	   =  objResult[fil].getValue(columnsDetalle[2]);
+					
+					var fecha 	   =  objResult[fil].getValue(columnsDetalle[3]);
+					var codigoid   =  objResult[fil].getValue(columnsDetalle[4]);
+					var codigo 	   =  objResult[fil].getValue(columnsDetalle[5]);
+					var impuesto   =  objResult[fil].getValue(columnsDetalle[6]);
+					var importe    =  objResult[fil].getValue(columnsDetalle[7]);
+					var preimpresofin =  objResult[fil].getValue(columnsDetalle[8]);
+                    nlapiLogExecution('ERROR','preimpresofin',preimpresofin);
+                	recordBMlog = nlapiCreateRecord(LOGRECORD_ID);
+	            	recordBMlog.setFieldValue('custrecord_lmry_pe_bol_mas_subsi',nlapiGetSubsidiary());
+	           		recordBMlog.setFieldValue('custrecord_lmry_pe_bol_mas_user',nlapiGetUser());
+	            	recordBMlog.setFieldValue('custrecord_lmry_pe_bol_mas_date','Procesando');
+	            	id_BMlog = nlapiSubmitRecord(recordBMlog);
+                    var idinvoice = BM_invoice( fecha,codigoid,serieid,preimpresoini,preimpresofin,impuesto,importe,serie,codigo);
+					nlapiLogExecution('ERROR','idinvoice',idinvoice);
+					nlapiSubmitField(LOGRECORD_ID, id_BMlog, ['custrecord_lmry_pe_bol_mas_trans', 'custrecord_lmry_pe_bol_mas_date','custrecord_lmry_pe_bol_mas_pre'], [idinvoice, fecha,preimpresoini+' - '+preimpresofin]); 
+                }
+            }
+
 	 	
-	 	var ArrCabe = new Array();	
+ 	}catch(err){		
+		// Envia correo de error al usuario
+		nlapiLogExecution('ERROR','ERROR',err);	
+	}
+}
+function Busqueda_bol(fechaB){
+	try{
+	var ArrCabe = new Array();	
 	 	var ArrItem = new Array();
 	 	var swPrimera = true;
 	 	var contS=0;
+	 	nlapiLogExecution('ERROR','Fechita',fechaB);
 		// Ejecuta la busqueda
-		var objResultSearch = nlapiLoadSearch('customrecord_lmry_pe_ei_boleteo_masivo','customsearch_lmry_pe_ei_boleteo_masivo');	
+		var objResultSearch = nlapiLoadSearch('customrecord_lmry_pe_ei_boleteo_masivo','customsearch_lmry_pe_ei_boleteo_masivo');
+		if(fechaB!='' && fechaB!='null' && fechaB!=null){
+                objResultSearch.addFilter(new nlobjSearchFilter('custrecord_lmry_pe_ei_date', null, 'on', fechaB));
+            }	
 		var busquedaResult	= objResultSearch.runSearch();
 
 		while (!bolStop)
@@ -249,7 +298,7 @@ function BM_main_schedule()
 		
 		// Log de Errores
 		nlapiLogExecution('ERROR', 'BM_main_schedule -> ', 'Proceso Terminado...');
- 	}catch(err){		
+	}catch(err){		
 		// Envia correo de error al usuario
 		nlapiLogExecution('ERROR','ERROR',err);	
 	}
@@ -258,69 +307,52 @@ function BM_main_schedule()
 /* ------------------------------------------------------------------------------------------------------
  * Funcion para crear la factura de un estado de cuenta de tiempos
  * --------------------------------------------------------------------------------------------------- */
-function BM_invoice(Cliente,Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero,CantItems, ArrItem)
+function BM_invoice(Fecha,DocuTipo,DocuSeri,PrimerNumero,UltimoNumero, Impuesto,Importe,Serie,Codigo)
 {	
-			
-		//var invoice_entity  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_expense_entity');
-		//var invoice_item  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_item');
-		//var invoice_taxc  = objContext.getSetting('SCRIPT', 'custscript_lmry_law360_invoice_taxcode');
 		var idRecord = 0;
 
 		// Valida que este configurado para la generacion de factura
-		if (Cliente=='' || DocuTipo==null || DocuSeri=='' ){
+		if ( DocuTipo==null || DocuSeri=='' ){
 			// Log de Errores
 			nlapiLogExecution('ERROR', 'law360_invoice - Falta configurar parametros-> ', DocuSeri + ' , ' + Fecha);
 			
 			// Termina la funcion
 			return idRecord;
 		}
-		
-		var items= new Array();
-		items=ArrItem;
-
 		/**********************************************
 		 * Crea el nuevo invoice 
 		 *********************************************/
-		nlapiLogExecution('ERROR','subsi',Cliente);
+		
 		nlapiLogExecution('ERROR','Fecha',Fecha);
 		nlapiLogExecution('ERROR','DocuTipo',DocuTipo);
 		nlapiLogExecution('ERROR','DocuSerie',DocuSeri);
 		nlapiLogExecution('ERROR','PrimerNumero',PrimerNumero);
 		nlapiLogExecution('ERROR','UltimoNumero',UltimoNumero);
-		nlapiLogExecution('ERROR','CantidadItems',CantItems);
+		
 		
 
 		var NewRecord = nlapiCreateRecord('invoice');
 			NewRecord.setFieldValue('customform',FORMULARIO); //Formulario
-			NewRecord.setFieldValue('entity',Cliente );		// Cliente
+			NewRecord.setFieldValue('entity',CLIENTE);		// Cliente
 			NewRecord.setFieldValue('location',LOCATION);// Location
+  			NewRecord.setFieldValue('department',DEPA);
 			NewRecord.setFieldValue('trandate', Fecha );		//Fecha	
 			NewRecord.setFieldValue('custbody_lmry_document_type', DocuTipo);		// Latam - Legal Document Type
 			NewRecord.setFieldValue('custbody_lmry_serie_doc_cxc', DocuSeri);		// Latam - Serie CxC
 			NewRecord.setFieldValue('custbody_lmry_num_preimpreso', PrimerNumero);		// Latam - Numero Preimpreso
 			NewRecord.setFieldValue('custbody_lmry_pe_num_final_preimpreso', UltimoNumero);		// Latam - Numero Final Preimpreso
-
-			for(var i=0; i<CantItems; i++){
-
-				nlapiLogExecution('ERROR','item0',items[i][0]);
-				nlapiLogExecution('ERROR','item1',items[i][1]);
-				nlapiLogExecution('ERROR','item2',items[i][2]);
-				nlapiLogExecution('ERROR','item3',items[i][3]);
-				nlapiLogExecution('ERROR','item4',items[i][4]);
-				nlapiLogExecution('ERROR','item5',items[i][5]);
-				nlapiLogExecution('ERROR','item6',items[i][6]);
-
+var i=0;
 				// Agrega el registro
 				NewRecord.setLineItemValue('item', 'quantity'	, i+1, 1);
 				NewRecord.setLineItemValue('item', 'item'		, i+1, ITEM);
-				NewRecord.setLineItemValue('item', 'rate'		, i+1, items[i][1]);//total de los importes Registro
-				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, items[i][2]);//taxcode
+				NewRecord.setLineItemValue('item', 'rate'		, i+1, Importe);//total de los importes Registro
+				NewRecord.setLineItemValue('item', 'taxcode'	, i+1, Impuesto);//taxcode
 				//NewRecord.setLineItemValue('item', 'custcol_4601_witaxapplies', 1, 'F'); 	// With Holding Tax
-				NewRecord.setLineItemValue('item', 'custcol_lmry_col_tipo_doc'	, i+1, items[i][3]); // TIPODOC
-				NewRecord.setLineItemValue('item', 'custcol_lmry_col_serie_cxc'	, i+1, items[i][4]); // Serie
-				NewRecord.setLineItemValue('item', 'custcol_lmry_col_num_ini'	, i+1, items[i][5]); // PRIMERO
-				NewRecord.setLineItemValue('item', 'custcol_lmry_col_num_fin'	, i+1, items[i][6]); // ULTIMO
-			}
+				NewRecord.setLineItemValue('item', 'custcol_lmry_col_tipo_doc'	, i+1, Codigo); // TIPODOC
+				NewRecord.setLineItemValue('item', 'custcol_lmry_col_serie_cxc'	, i+1, Serie); // Serie
+				NewRecord.setLineItemValue('item', 'custcol_lmry_col_num_ini'	, i+1, PrimerNumero); // PRIMERO
+				NewRecord.setLineItemValue('item', 'custcol_lmry_col_num_fin'	, i+1, UltimoNumero); // ULTIMO
+			
 
 			
 
@@ -344,7 +376,9 @@ function getEnableFeatures(){
 	var coltabla = new Array();
 		coltabla[0] =  new nlobjSearchColumn('custrecord_lmry_pe_ei_temp_factu');
 		coltabla[1] =  new nlobjSearchColumn('custrecord_lmry_pe_ei_items');
-		coltabla[2] =  new nlobjSearchColumn('custrecord_lmry_pe_ei_location');
+		coltabla[2] =  new nlobjSearchColumn('custrecord_lmry_pe_ei_custome');
+  coltabla[3] =  new nlobjSearchColumn('custrecord_lmry_pe_ei_location');
+  coltabla[4] =  new nlobjSearchColumn('custrecord_lmry_pe_ei_depa');
 
 	enabFeatureRecord = nlapiSearchRecord( 'customrecord_lmry_pe_ei_enable_feature'
 		  , null
@@ -358,9 +392,123 @@ function getEnableFeatures(){
 		nlapiLogExecution('ERROR', 'FORMULARIO', FORMULARIO);
 		ITEM = enabFeatureRecord[0].getValue('custrecord_lmry_pe_ei_items');
 		nlapiLogExecution('ERROR', 'ITEM', ITEM);
-		LOCATION = enabFeatureRecord[0].getValue('custrecord_lmry_pe_ei_location');
+		CLIENTE = enabFeatureRecord[0].getValue('custrecord_lmry_pe_ei_custome');
+		nlapiLogExecution('ERROR', 'CLIENTE', CLIENTE);
+      LOCATION = enabFeatureRecord[0].getValue('custrecord_lmry_pe_ei_location');
 		nlapiLogExecution('ERROR', 'LOCATION', LOCATION);
+      DEPA = enabFeatureRecord[0].getValue('custrecord_lmry_pe_ei_depa');
+		nlapiLogExecution('ERROR', 'DEPA', DEPA);
 
 	}	
 	
 }
+
+function obtenerUltimoDia(mes){
+	var auxmess=0;
+	nlapiLogExecution('ERROR','mes',mes);
+	switch (mes) {
+	case "01": case '03': case '05': case '07': case '08': case '10': case '12':
+		  auxmess = 31;
+		  break;
+	  case '02':
+		  auxmess = 28;
+		  break;
+	  case "04": case "06": case "09": case "11":
+		  auxmess = 30;
+		  break;
+	  default:
+		  auxmess = 0;
+		  break;
+	}
+	
+	return auxmess;
+}
+
+//-------------------------------------------------------------------------------------------------------	
+// Fecha de proceso
+//-------------------------------------------------------------------------------------------------------	
+function PeriodoMes(periodo) {
+	var auxfech = '';
+	var auxanio = '';
+	var auxmess = '';
+	auxanio= periodo.substring(4);
+	switch (periodo.substring(0, 3)) {
+	case 'Ene':
+		  auxmess = '01';
+		  break;
+	  case 'ene':
+		  auxmess = '01';
+		  break;
+	  case 'Feb':
+		  auxmess = '02';
+		  break;
+	  case 'feb':
+		  auxmess = '02';
+		  break;
+	  case 'Mar':
+		  auxmess = '03';
+		  break;
+	  case 'mar':
+		  auxmess = '03';
+		  break;
+	  case 'Abr':
+		  auxmess = '04';
+		  break;
+	  case 'abr':
+		  auxmess = '04';
+		  break;
+	  case 'May':
+		  auxmess = '05';
+		  break;
+	  case 'may':
+		  auxmess = '05';
+		  break;
+	  case 'Jun':
+		  auxmess = '06';
+		  break;
+	  case 'jun':
+		  auxmess = '06';
+		  break;
+	  case 'Jul':
+		  auxmess = '07';
+		  break;
+	  case 'jul':
+		  auxmess = '07';
+		  break;
+	  case 'Ago':
+		  auxmess = '08';
+		  break;
+	  case 'ago':
+		  auxmess = '08';
+		  break;
+	  case 'Set':
+		  auxmess = '09';
+		  break;
+	  case 'set':
+		  auxmess = '09';
+		  break;
+	  case 'Oct':
+		  auxmess = '10';
+		  break;
+	  case 'oct':
+		  auxmess = '10';
+		  break;
+	  case 'Nov':
+		  auxmess = '11';
+		  break;
+	  case 'nov':
+		  auxmess = '11';
+		  break;
+	  case 'Dic':
+		  auxmess = '12';
+		  break;
+	  case 'dic':
+		  auxmess = '12';
+		  break;
+	  default:
+		  auxmess = '00';
+		  break;
+	}
+	return auxmess;
+}
+

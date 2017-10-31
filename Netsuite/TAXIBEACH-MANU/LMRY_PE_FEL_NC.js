@@ -87,14 +87,9 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 			//serie = puntoDeVentaId.substring(1,4);
 			//serie = puntoDeVentaId.substring(0,4);
 			serie = puntoDeVentaId;
-
-			/* Registro Personalizado LatamReady - PE Puntos Ventas WS
-				var serie  = resultPtoVta[i].getValue(row[0]);
-				var ptoVta = resultPtoVta[i].getValue(row[1]);
-			*/
-        
-	        busqPtoVta = search.create({
-	            type: 'customrecord_lmry_pe_pto_vta_ws',
+			
+			busqPtoVta = search.create({
+              type: 'customrecord_lmry_pe_pto_vta_ws',
 	            columns: ['custrecord_lmry_pe_serie_cxc', 'custrecord_lmry_pe_pto_vta']
 	        });
 	        resultPtoVta = busqPtoVta.run().getRange(0, 30);
@@ -102,13 +97,12 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 	        if(resultPtoVta != null && resultPtoVta.length != 0){
 	        	for (var i = 0; i < resultPtoVta.length; i++) {
 	        		row  = resultPtoVta[i].columns;
-	        		xmlEnvio = xmlEnvio.replace('*PTOVTA*', resultPtoVta[i].getValue(row[0]));
-	        		xmlEnvio = xmlEnvio.replace('*PTOVTA1*', resultPtoVta[i].getText(row[0]));
 	        		if (serie == resultPtoVta[i].getValue(row[0])) {
 						puntoDeVentaIdWS = resultPtoVta[i].getValue(row[1]);
 		            }
 	        	}
 	        }
+
 			var fechaEmision = xmlEnvio.split('cbc:IssueDate>')[1];			
 			if(fechaEmision != null && fechaEmision != ''){
 				fechaEmision = fechaEmision.substring(0, fechaEmision.length-2);
@@ -150,6 +144,7 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
 					}
                 }
             }
+
 
 			/*Generacion Sumatorias Montos por Impuesto*/
 			/*Para MONTOLINEA : "Total valor de venta - operaciones gravadas" - Cod 10 "Gravado - Operación Onerosa". */

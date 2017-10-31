@@ -138,7 +138,7 @@ function VPClnt_SaveRecord() {
 							//valida si el tipo de documento esta dentro de la tabla "LatamReady - Pe Retenciones :)"
 							if(exitoRe){
 								
-								if(montofactura>700){
+								if(montofactura>700 || (montoTotal>700 && montofactura<700)){
 									nlapiLogExecution('ERROR', 'exitoRetencion','entro');
 									if(recSOx.getFieldValue('custbody_lmry_concepto_detraccion')!=12){
 										//FACTURA TIENE CONCEPTO DE DETRACCION DISTINTO A 'SIN DETRACCION'

@@ -172,13 +172,14 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
             var montoDescTot=0.00;
             var montosDesc='';
             var porcentajes='';
+            var itemsDesc='';
 
             	var InvoiceLine  = xmlEnvio.split('cac:InvoiceLine');
       
 				for (var j = 1; j < InvoiceLine.length; j=j+2) {
 					
 					if(InvoiceLine[j] != null && InvoiceLine[j] != ''){
-						
+						//validador usado para el monto y porcentaje de descuento
 						var validador = xmlEnvio.split('-VALI-')[1];
             			var valiLast = '-VALI-'+validador+'-VALI-';
             			xmlEnvio = xmlEnvio.replace(valiLast,'');
@@ -202,12 +203,27 @@ define(["N/record", "N/runtime", "N/file", "N/email", "N/encode", "N/search", "N
                          		montosDesc=montosDesc + '0/';
 								porcentajes=porcentajes+'0/';
                         }
+
+                        //validador usado para el nombre del item de descuento
+                        var validador2 = xmlEnvio.split('-VALI2-')[1];
+                        var valiLast2 = '-VALI2-'+validador2+'-VALI2-';
+                        xmlEnvio = xmlEnvio.replace(valiLast2,'');
+
+                        if(validador !=null && validador!=''){
+                        	itemsDesc=itemsDesc+validador2+'/';
+
+                        }else{
+                        	itemsDesc=itemsDesc+'0/';
+
+                        }
 					}	
 				}
             montosDesc=montosDesc.substring(0, montosDesc.length-1);
             porcentajes=porcentajes.substring(0, porcentajes.length-1);
+            itemsDesc =itemsDesc.substring(0,itemsDesc.length-1);
             xmlEnvio = xmlEnvio.replace('-PORCENTAJES-',montosDesc);
             xmlEnvio = xmlEnvio.replace('-MONTOSDESC-',porcentajes);
+            xmlEnvio = xmlEnvio.replace('-ITEMSDESC-',itemsDesc);
             descGlo= descCab+montoDescTot;
          
             reg = new RegExp('-MONTODESC-', "g");

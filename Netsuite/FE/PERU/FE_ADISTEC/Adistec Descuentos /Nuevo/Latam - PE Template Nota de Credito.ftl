@@ -1,7 +1,7 @@
-<#setting locale    = "en_US">
-<#assign cont       = 1>
-<#assign currency   = transaction.currency.symbol>
-<#assign descGlobal = transaction.discounttotal*-1?c?number>
+<#setting locale="en_US">
+<#setting number_format="#.##">
+<#assign contador = 0>
+<#assign currency = transaction.currency.symbol>
 <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
 <Comprobantes>
 <Comprobante>
@@ -12,7 +12,7 @@
 			<ext:ExtensionContent>
 				<sac:AdditionalInformation>
 					<sac:AdditionalMonetaryTotal>
-						<cbc:ID>1001</cbc:ID>
+						<cbc:ID>1001</cbc:ID> <!-- Valor de venta por ítem-->
 						<cbc:PayableAmount currencyID="${currency}">-MONTO1001-</cbc:PayableAmount>
 					</sac:AdditionalMonetaryTotal>
 					<sac:AdditionalMonetaryTotal>
@@ -20,16 +20,9 @@
 						<cbc:PayableAmount currencyID="${currency}">-MONTO1002-</cbc:PayableAmount>
 					</sac:AdditionalMonetaryTotal>
 					<sac:AdditionalMonetaryTotal>
-						<cbc:ID>1003</cbc:ID>
+						<cbc:ID>1003</cbc:ID> <!-- Valor de venta por ítem-->
 						<cbc:PayableAmount currencyID="${currency}">-MONTO1003-</cbc:PayableAmount>
 					</sac:AdditionalMonetaryTotal>
-					<!-- DISCOUNTTOTAL : ${transaction.discounttotal} - DISCOUNTRATE : ${transaction.discountrate} - *DISCRATE*${transaction.discountrate?c}*DISCRATE* - ${transaction.discountrate?c?number?string["#.###"]} - ${transaction.discountrate?c}-->
-					
-					<sac:AdditionalMonetaryTotal>
-						<cbc:ID>2005</cbc:ID>
-						<cbc:PayableAmount currencyID="${currency}">-MONTO2005-${descGlobal?string["#.##"]}-MONTO2005-</cbc:PayableAmount>
-					</sac:AdditionalMonetaryTotal>
-					
 					<sac:AdditionalProperty>
 						<cbc:ID>1000</cbc:ID>
 						<cbc:Value>${transaction.custbody_monto_letras_pa}</cbc:Value>
@@ -37,10 +30,12 @@
 				</sac:AdditionalInformation>
 			</ext:ExtensionContent>
 		</ext:UBLExtension>
+		<ext:UBLExtension>
+		</ext:UBLExtension>
 	</ext:UBLExtensions>
 	<cbc:UBLVersionID>2.0</cbc:UBLVersionID>
 	<cbc:CustomizationID>1.0</cbc:CustomizationID>
-	<cbc:ID>-NUMERACION-${transaction.custbody_lmry_serie_doc_cxc + "-" + transaction.custbody_lmry_num_preimpreso}-NUMERACION-</cbc:ID>
+	<cbc:ID>-NUMERACION-${transaction.custbody_lmry_serie_doc_cxc}-${transaction.custbody_lmry_num_preimpreso}-NUMERACION-</cbc:ID>
 	<cbc:IssueDate>${transaction.trandate}</cbc:IssueDate>
 	<cbc:DocumentCurrencyCode>${currency}-TIPODOC-${transaction.custbody_lmry_document_type.custrecord_lmry_codigo_doc}-TIPODOC-</cbc:DocumentCurrencyCode>
 	<cac:DiscrepancyResponse>
@@ -91,7 +86,7 @@
 			</cac:PartyLegalEntity>
 		</cac:Party>
 	</cac:AccountingCustomerParty>
-	<cac:TaxTotal>
+	<cac:TaxTotal> <!-- 1000 - IGV - VAT Identifican el total de IGV de la factura -->
 		<cbc:TaxAmount currencyID="${currency}">${transaction.taxtotal?c?number?string["#.##"]}</cbc:TaxAmount>
 		<cac:TaxSubtotal>
 			<cbc:TaxAmount currencyID="${currency}">${transaction.taxtotal?c?number?string["#.##"]}</cbc:TaxAmount>
@@ -104,34 +99,34 @@
 		</cac:TaxSubtotal>
 	</cac:TaxTotal>
 	<cac:LegalMonetaryTotal>
+		<!--IMPORTE TOTAL-->
 		<cbc:PayableAmount currencyID="${currency}">${transaction.total?c?number?string["#.##"]}</cbc:PayableAmount>
-		<#if transaction.discounttotal != 0>
-		<cbc:AllowanceTotalAmount currencyID="${currency}">${descGlobal?string["#.##"]}</cbc:AllowanceTotalAmount>
-		</#if>
 	</cac:LegalMonetaryTotal>
 	<#list transaction.item as item>
-	<#if item.amount \gt 0>
-	<cac:CreditNoteLine>
-		<cbc:ID>${cont}</cbc:ID>
-		<#assign cont = cont + 1>
-		<cbc:CreditedQuantity unitCode="${item.units}">-QTY-${item.quantity?c?number?string["#.###"]}-QTY-</cbc:CreditedQuantity>
+	<cac:CreditNoteLine>		
+		<#assign contador = contador+1>
+		<cbc:ID>${contador}</cbc:ID>
+		<!-- Es la cantidad de items que se compro = Q -->
+		<cbc:CreditedQuantity unitCode="NIU">${item.quantity?c?number?string["#.###"]}</cbc:CreditedQuantity>
 		<!-- Es el valor de venta por item = Valor de Venta Bruto - Descuento -->
-		<cbc:LineExtensionAmount currencyID="${currency}">-MONTOLINEA--MONTO-${item.amount?c?number?string["#.##"]}-MONTO--MONTOLINEA-</cbc:LineExtensionAmount>
+		<cbc:LineExtensionAmount currencyID="${currency}">-MONTOLINEA-${item.amount?c?number?string["#.##"]}-MONTOLINEA-</cbc:LineExtensionAmount>
 		<cac:PricingReference>
 			<cac:AlternativeConditionPrice>
 				<#assign precUnit = item.rate + item.rate*item.taxrate1?c?number>
-				<!-- ${precUnit} - Unidad Medida: ${item.units}  -->
+				<!-- ${precUnit} -->
 				<cbc:PriceAmount currencyID="${currency}">${precUnit?c?number?string["#.##"]}</cbc:PriceAmount>
 				<cbc:PriceTypeCode>01</cbc:PriceTypeCode>
 			</cac:AlternativeConditionPrice>
 		</cac:PricingReference>
-		<!-- ITEMTAXRATE : ${item.taxrate1} - ${item.taxrate1?c?number} -->
-		<cac:TaxTotal>
-			<cbc:TaxAmount currencyID="${currency}">-TAXAMOUNT-${item.tax1amt?c?number?string["#.##"]}-TAXAMOUNT-</cbc:TaxAmount>
+		<!-- TAXRATE : ${item.taxrate1} - ${item.taxrate1?c?number} -->
+		<cac:TaxTotal> 
+		     <!-- IGV Total de ese Item --> 
+			<cbc:TaxAmount currencyID="${currency}">${item.tax1amt?c?number?string["#.##"]}</cbc:TaxAmount>
 			<cac:TaxSubtotal>
-				<cbc:TaxAmount currencyID="${currency}">-TAXAMOUNT-${item.tax1amt?c?number?string["#.##"]}-TAXAMOUNT-</cbc:TaxAmount>
+				<cbc:TaxAmount currencyID="${currency}">${item.tax1amt?c?number?string["#.##"]}</cbc:TaxAmount>
 				<cac:TaxCategory>
 					<cbc:TaxExemptionReasonCode>-COD-${item.taxcode}-COD-</cbc:TaxExemptionReasonCode>
+					<!-- IGV gravado operacion ONEROSA -->
 					<cac:TaxScheme>
 						<cbc:ID>1000</cbc:ID>
 						<cbc:Name>IGV</cbc:Name>
@@ -141,71 +136,18 @@
 			</cac:TaxSubtotal>
 		</cac:TaxTotal>
 		<cac:Item>
-			<cbc:Description>${item.custcol4} ${item.description}</cbc:Description>
+		 	<!-- DESCRIPCION --> 
+			<cbc:Description>${item.description}</cbc:Description>
 			<cac:SellersItemIdentification>
-				<cbc:ID>${item.price}</cbc:ID>
+			<!-- CODIGO DE ITEM --> 
+				<cbc:ID>${item.item}</cbc:ID>
 			</cac:SellersItemIdentification>
 		</cac:Item>
 		<cac:Price>
+		     <!-- VAlor unitario por item -->  
 			<cbc:PriceAmount currencyID="${currency}">${item.rate?c?number?string["#.##"]}</cbc:PriceAmount>
-		</cac:Price>
-	</cac:CreditNoteLine>	
-	<#elseif item.amount \lt 0>
-	<cac:CreditNoteLine>
-		 <!-- *ESDESC* -->
-		<cbc:ID>${cont}</cbc:ID>
-		<#assign cont = cont + 1>
-		<cbc:CreditedQuantity unitCode="${item.units}">-QTY-1-QTY-</cbc:CreditedQuantity>
-		<!-- Es el valor de venta por item = Valor de Venta Bruto - Descuento -->
-		<#assign montoDesc = item.amount*-1?c?number>
-		<cbc:LineExtensionAmount currencyID="${currency}">0.00</cbc:LineExtensionAmount>
-		<cac:PricingReference>
-			<cac:AlternativeConditionPrice>
-				<!-- ${precUnit} - Unidad Medida: ${item.units}  -->
-				<cbc:PriceAmount currencyID="${currency}">0.00</cbc:PriceAmount>
-				<cbc:PriceTypeCode>01</cbc:PriceTypeCode>
-			</cac:AlternativeConditionPrice>
-			<cac:AlternativeConditionPrice>
-                <#assign precUnit = item.rate + item.rate*item.taxrate1?c?number>
-                <!-- ${precUnit} - Unidad Medida: ${item.units} -->
-                <cbc:PriceAmount currencyID="${currency}">-MONTODESC-${montoDesc?string["#.##"]}-MONTODESC-</cbc:PriceAmount>
-                <cbc:PriceTypeCode>02</cbc:PriceTypeCode>
-            </cac:AlternativeConditionPrice>
-		</cac:PricingReference>
-
-		<cac:AllowanceCharge>
-		 	<cbc:ChargeIndicator> false </cbc:ChargeIndicator >
-		 	<cbc:Amount currencyID="${currency}">-MONTODESC-${montoDesc?string["#.##"]}-MONTODESC-</cbc:Amount>
-
-		</cac:AllowanceCharge>
-		 <!-- *AXL*  -  *1001*  -  *SLASH* -->
-	     <!-- ITEMTAXRATE : ${item.taxrate1} - ${item.taxrate1?c?number} -->
-		<cac:TaxTotal>
-			<cbc:TaxAmount currencyID="${currency}">0</cbc:TaxAmount>
-			<cac:TaxSubtotal>
-				<cbc:TaxAmount currencyID="${currency}">0</cbc:TaxAmount>
-				<cac:TaxCategory>
-					<cbc:TaxExemptionReasonCode>31</cbc:TaxExemptionReasonCode>
-					<cac:TaxScheme>
-						<cbc:ID>1000</cbc:ID>
-						<cbc:Name>IGV</cbc:Name>
-						<cbc:TaxTypeCode>VAT</cbc:TaxTypeCode>
-					</cac:TaxScheme>
-				</cac:TaxCategory>
-			</cac:TaxSubtotal>
-		</cac:TaxTotal>
-		<cac:Item>
-			<cbc:Description>${item.custcol4} ${item.description}</cbc:Description>
-			<cac:SellersItemIdentification>
-				<cbc:ID>${item.price}</cbc:ID>
-			</cac:SellersItemIdentification>
-		</cac:Item>
-		<cac:Price>
-			<cbc:PriceAmount currencyID="${currency}">-MONTODESC-${montoDesc?string["#.##"]}-MONTODESC-</cbc:PriceAmount>
-		</cac:Price>
-
+		</cac:Price>		
 	</cac:CreditNoteLine>
-	</#if>
 	</#list>
 </CreditNote>
 <TextosLibres>
@@ -217,11 +159,6 @@
 	<TextoLibre6>${transaction.memo}</TextoLibre6>
 	<TextoLibre7>${transaction.duedate}</TextoLibre7>
 	<TextoLibre8>${transaction.currency}</TextoLibre8>
-	<TextoLibre9>${transaction.salesrep}</TextoLibre9>
-	<TextoLibre10>-2005-</TextoLibre10>
-	<TextoLibre11>-1001-</TextoLibre11>
-	<TextoLibre12>-1002-</TextoLibre12>
-	<TextoLibre13>-1003-</TextoLibre13>
 </TextosLibres>
 </informacionOrganismo>
 </Comprobante>

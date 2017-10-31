@@ -183,17 +183,81 @@ function VPUret_AfterSubmit(type){
 			
 			// Solo para Peru - Retenciones en compras
 			if ( type=='create' && LMRY_Result[0]=='PE' && getAuthorization(1)==true ) {				
-				var cantLineas = nlapiGetLineItemCount('apply');
-				var serieCompr = nlapiGetFieldValue('custbody_lmry_serie_retencion');
+				var variable = nlapiLoadRecord('vendorpayment',nlapiGetRecordId());
+										
+
+				var cantLineas = variable.getLineItemCount('apply');
+				//para los pagos
+				var montoTot =0;
+				var montoTot2 =0;
+					for(var cuenta=1; cuenta<=cantLineas; cuenta++){
+						//nlapiLogExecution('ERROR', 'MONTOS PAGADOS EN LA TRANSACCION: ', nlapiGetLineItemValue('apply', 'internalid', cuenta));
+						//nlapiGetLineItemValue('apply', 'amount', cuenta);
+						if(variable.getLineItemValue('apply','apply',cuenta)=='T'){
+							nlapiLogExecution('ERROR', 'DOCUMENTO APLICADO 1:', variable.getLineItemValue('apply', 'internalid', cuenta));
+							
+							var vendorBillIdx = variable.getLineItemValue('apply','internalid',cuenta);
+							var vendorBillTe = nlapiLookupField('vendorbill',vendorBillIdx, ['entity','account']);
+
+							if(vendorBillTe.entity!=null || vendorBillTe.account!=null){
+								var recSOx = nlapiLoadRecord('vendorbill',vendorBillIdx);
+								nlapiLogExecution('ERROR', 'TIPO DE TRANSACCION:', 'vendorbill');
+								encontroTransaccion = true;
+							}else{
+								if(nlapiLookupField('vendorcredit',vendorBillIdx,'entity')!=null){
+									var recSOx = nlapiLoadRecord('vendorcredit',vendorBillIdx);
+									nlapiLogExecution('ERROR', 'TIPO DE TRANSACCION:', 'vendorcredit');
+									encontroTransaccion = true;
+								}else{
+									if(nlapiLookupField('expensereport',vendorBillIdx,'entity')!=null){
+										var recSOx = nlapiLoadRecord('expensereport',vendorBillIdx);
+										nlapiLogExecution('ERROR', 'TIPO DE TRANSACCION:', 'expensereport');
+										encontroTransaccion = true;
+									}else{
+										encontroTransaccion = false;
+									}
+								}
+							}
+							var tipoCambiofac = recSOx.getFieldValue('exchangerate');
+							var montofac = parseFloat(recSOx.getFieldValue('usertotal'))*parseFloat(tipoCambiofac);
+							if(parseFloat(recSOx.getFieldValue('taxtotal'))>0){
+								
+								montoTot=montoTot+montofac;
+
+							}
+							var tipoDocumento = recSOx.getFieldValue('custbody_lmry_document_type');
+							nlapiLogExecution('ERROR', 'TIPO DE DOCUMENTO:', tipoDocumento);
+							if (tipoDocumento!=null) //DMC
+								{
+								//Tabla LatamReady - Pe Retenciones
+								var filters = new Array();
+									filters[0] = new nlobjSearchFilter('custrecord_lmry_pe_tipo_doc_fiscal', null, 'anyof', tipoDocumento)
+								var columns = new Array();
+									columns[0] = new nlobjSearchColumn('internalid');
+								var RetencionesTL = nlapiSearchRecord('customrecord_lmry_pe_retenciones', null, filters, columns);
+								
+									if(RetencionesTL!=null && RetencionesTL!=''){
+										var longitudRe = RetencionesTL.length;
+										if(longitudRe>0){
+											montoTot2= montoTot2+montofac;
+										}
+									}									
+								}
+							
+						}
+					}		
+				var serieCompr = variable.getFieldValue('custbody_lmry_serie_retencion');
 				
 				buscaImpuestos();
 				nlapiLogExecution('ERROR', 'IMPUESTOS ENCONTRADOS', valorporcA+' - '+valorporcB);
 				
 				if(serieCompr!=null && serieCompr!=''){
 					buscaCorrelativo(serieCompr);
-					var exchangeRT = nlapiGetFieldValue('exchangerate');
-					var proveedor = nlapiGetFieldValue('entity');
+					var exchangeRT = variable.getFieldValue('exchangerate');
+					var proveedor = variable.getFieldValue('entity');
 					var datosproveedor = nlapiLookupField('vendor', proveedor, [ 'custentity_lmry_es_agente_retencion', 'custentity_lmry_es_buen_contribuyente', 'custentity_lmry_es_agente_percepcion', 'country' ] );
+					
+					
 					if(datosproveedor==null){
 						//VALIDA QUE NO SEA PROVEEDOR
 						return true;
@@ -202,10 +266,10 @@ function VPUret_AfterSubmit(type){
 					var esBuenContribuyente = datosproveedor.custentity_lmry_es_buen_contribuyente;
 					var esAgentePercepcion 	= datosproveedor.custentity_lmry_es_agente_percepcion;
 					var countryVendor		= datosproveedor.country;
-					var tipoCambio = nlapiGetFieldValue('exchangerate');
-					var montoTotal = parseFloat(nlapiGetFieldValue('total'))*parseFloat(tipoCambio);
+					var tipoCambio = variable.getFieldValue('exchangerate');
+					var montoTotal = parseFloat(variable.getFieldValue('total'))*parseFloat(tipoCambio);
 					nlapiLogExecution('ERROR', 'montoTotal', montoTotal);
-					if(esAgenteRetencion!=1 && esAgentePercepcion!=1 && esBuenContribuyente!=1 && (countryVendor=='PE'||countryVendor==''||countryVendor==null)){
+					if((montoTot>700 && montoTot2>700)&& esAgenteRetencion!=1 && esAgentePercepcion!=1 && esBuenContribuyente!=1 && (countryVendor=='PE'||countryVendor==''||countryVendor==null)){
 						var nuevoRegistro = nlapiCreateRecord('customrecord_lmry_comprobante_retencion');
 							nuevoRegistro.setFieldValue('custrecord_lmry_serie_retencion', serieCompr);
 							//nuevoRegistro.setFieldValue('custrecord_lmry_comp_retencion', numerCompr);
@@ -213,12 +277,14 @@ function VPUret_AfterSubmit(type){
 							nuevoRegistro.setFieldValue('custrecord_lmry_tipo_cambio_pago', exchangeRT);
 							nuevoRegistro.setFieldValue('custrecord_lmry_proveedor', proveedor);
 						for(var cuenta=1; cuenta<=cantLineas; cuenta++){
+							nlapiLogExecution('ERROR','cuenta:',cuenta);
+							nlapiLogExecution('ERROR','CantLineas',cantLineas);
 							//nlapiLogExecution('ERROR', 'MONTOS PAGADOS EN LA TRANSACCION: ', nlapiGetLineItemValue('apply', 'internalid', cuenta));
 							//nlapiGetLineItemValue('apply', 'amount', cuenta);
-							if(nlapiGetLineItemValue('apply','apply',cuenta)=='T'){
-								nlapiLogExecution('ERROR', 'DOCUMENTO APLICADO', nlapiGetLineItemValue('apply', 'internalid', cuenta));
+							if(variable.getLineItemValue('apply','apply',cuenta)=='T'){
+								nlapiLogExecution('ERROR', 'DOCUMENTO APLICADO 2: ', variable.getLineItemValue('apply', 'internalid', cuenta));
 								
-								var vendorBillIdx = nlapiGetLineItemValue('apply','internalid',cuenta);
+								var vendorBillIdx = variable.getLineItemValue('apply','internalid',cuenta);
 								nuevoRegistro.setFieldValue('custrecord_lmry_transaccion_pagada', vendorBillIdx);
 								var vendorBillTe = nlapiLookupField('vendorbill',vendorBillIdx, ['entity','account']);
 
@@ -243,7 +309,8 @@ function VPUret_AfterSubmit(type){
 								var cantExpnx = recSOx.getLineItemCount('expense');
 								//VALIDA SI ES LETRA O OTROS DOCUMENTOS AFECTOS A RETENCION
 								var tipoDocumento = recSOx.getFieldValue('custbody_lmry_document_type');
-								var montofactura = parseFloat(recSOx.getFieldValue('usertotal'));
+								var tipoCambiofact = recSOx.getFieldValue('exchangerate');
+								var montofactura = parseFloat(recSOx.getFieldValue('usertotal'))*parseFloat(tipoCambiofact);
 								var valorRetenido = 0;
 								//Tabla LatamReady - Pe Retenciones
 								var filters = new Array();
@@ -261,8 +328,9 @@ function VPUret_AfterSubmit(type){
 
 								//valida si el tipo de documento esta dentro de la tabla "LatamReady - Pe Retenciones :)"
 								if(exitoRe){
-									if(montofactura>700){
-
+									if(montofactura>700 || (montoTotal>700 && montofactura<700)){
+										//variable de la factura
+										//var variable = nlapiLoadRecord('vendorpayment',nlapiGetRecordId());
 										nlapiLogExecution('ERROR', 'Tipo DE Documento', 'Factura');
 										//Tipo de documento no sea Comprobante de No domiciliado
 										var conProNoDoc =recSOx.getFieldText('custbody_lmry_document_type');
@@ -284,7 +352,7 @@ function VPUret_AfterSubmit(type){
 														var monedaTransaccioPagada = recSOx.getFieldValue('currency');
 														nlapiLogExecution('ERROR', 'Datos del monto a pagar: ', montoTransaccionPagada + ' - ' + exchangeRT)
 														//var montoFormula = parseFloat(montoTransaccionPagada)/((100-parseFloat(valorporc))/100)*(montoPagoTxAplicada/recSOx.getFieldValue('usertotal'));
-														var montoFormula = nlapiGetLineItemValue('apply', 'amount', cuenta);
+														var montoFormula = variable.getLineItemValue('apply', 'amount', cuenta);
 														nlapiLogExecution('ERROR', 'Datos del monto formula: ', montoFormula);
 														//Monto Pago / (100%+tasa WHT) * importe de linea / importe total de documento (letra)
 														nuevoRegistro.setFieldValue('custrecord_lmry_comp_retencion', correlativo);
@@ -311,7 +379,7 @@ function VPUret_AfterSubmit(type){
 														var monedaTransaccioPagada = recSOx.getFieldValue('currency');
 														nlapiLogExecution('ERROR', 'Datos del monto a pagar: ', montoTransaccionPagada + ' - ' + exchangeRT);
 														//var montoFormula = parseFloat(montoTransaccionPagada)/((100-parseFloat(valorporc))/100)*(montoPagoTxAplicada/recSOx.getFieldValue('usertotal'));
-														var montoFormula = nlapiGetLineItemValue('apply', 'amount', cuenta);
+														var montoFormula = variable.getLineItemValue('apply', 'amount', cuenta);
 														nlapiLogExecution('ERROR', 'Datos del monto formula: ', montoFormula);
 														//Monto Pago / (100%+tasa WHT) * importe de linea / importe total de documento (letra)
 														nuevoRegistro.setFieldValue('custrecord_lmry_comp_retencion', correlativo);
@@ -331,19 +399,9 @@ function VPUret_AfterSubmit(type){
 													var valorFecha = recSOx.getFieldValue('trandate');
 													validaFecha(valorFecha);
 													
-													var montoPagoTxAplicada = nlapiGetLineItemValue('apply', 'amount', cuenta);
-													var idTran = nlapiGetLineItemValue('apply', 'internalid', cuenta);
-													if( montoPagoTxAplicada==500.00){
-														nlapiLogExecution('ERROR', 'ID', idTran);
-														var variable = nlapiLoadRecord('vendorbill',idTran);
-														variable.setLineItemValue('apply','amount', 1, 350.00);
-														nlapiSubmitRecord(variable);
-														
-													}
-													montoPagoTxAplicada = nlapiGetLineItemValue('apply', 'amount', cuenta);
-	
-													var montoPagoTxAplicadaDue = nlapiGetLineItemValue('apply', 'due', cuenta);
-													var montoPagoTxAplicadaDisc = nlapiGetLineItemValue('apply', 'disc', cuenta);
+													var montoPagoTxAplicada = variable.getLineItemValue('apply', 'amount', cuenta);
+													var montoPagoTxAplicadaDue = variable.getLineItemValue('apply', 'due', cuenta);
+													var montoPagoTxAplicadaDisc = variable.getLineItemValue('apply', 'disc', cuenta);
 													nlapiLogExecution('ERROR', 'Datos monto pagado: ', montoPagoTxAplicada + ' - ' + montoPagoTxAplicadaDue + ' - ' + montoPagoTxAplicadaDisc);
 													var serieTransaccionPagada = recSOx.getFieldValue('custbody_lmry_serie_doc_cxp');
 													var numeroTransaccioPagada = recSOx.getFieldValue('custbody_lmry_num_preimpreso');

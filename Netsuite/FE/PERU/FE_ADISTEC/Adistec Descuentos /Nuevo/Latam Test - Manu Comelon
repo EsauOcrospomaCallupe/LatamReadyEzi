@@ -143,7 +143,7 @@
 				<#assign precUnit = item.rate + item.rate*item.taxrate1?c?number>
 				<!-- ${precUnit} -->
 				<cbc:PriceAmount currencyID="${currency}">${precUnit?c?number?string["#.##"]}-VALI-${item.custcol_lmry_col_sales_discount?c?number?string["#.##"]}-VALI-</cbc:PriceAmount>
-				<cbc:PriceTypeCode>01-VALI2-${item.custcol_lmry_col_discount_item}-VALI2-</cbc:PriceTypeCode>
+				<cbc:PriceTypeCode>01</cbc:PriceTypeCode>
 			</cac:AlternativeConditionPrice>
 		</cac:PricingReference>
 		<#if item.custcol_lmry_col_sales_discount?c?number \gt 0>
@@ -202,7 +202,7 @@
 	<TextoLibre19>-PORCENTAJES-</TextoLibre19>
 	<TextoLibre20>-MONTOSDESC-</TextoLibre20>
 	<TextoLibre21>-MONTOSUBTOT-</TextoLibre21>
-<TextoLibre22>-ITEMSDESC-</TextoLibre22>
+<TextoLibre22>0/ITEMDESCUENTOPRUEBA</TextoLibre22>
 </TextosLibres>
 </informacionOrganismo>
 </Comprobante>

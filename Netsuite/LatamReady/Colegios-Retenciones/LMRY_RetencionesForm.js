@@ -95,7 +95,9 @@ function beforeSubmitRetencion(){
 		//para los pagos
 		var montoTot =0;
 		var montoTot2 =0;
-		var notieneDetraccion = true;
+		var hayDetra = true;
+		var hayDetra_last;
+		var transacPasan=0;
 
 		for(var cuentaDocAplicado=1; cuentaDocAplicado<=cantAplic; cuentaDocAplicado++){
 			//var sumaRetencion = 0;
@@ -122,24 +124,43 @@ function beforeSubmitRetencion(){
 					}
 				}
 				if(encontroTransaccion){
+					transacPasan=transacPasan+1;
+					
+					if(transacPasan==1){
+						if(recSOx.getFieldValue('custbody_lmry_concepto_detraccion')!=12){
+							hayDetra = false;
+							
+								
+						}else{
+							hayDetra = true;
+							
+						}
+
+					}
+					hayDetra_last=hayDetra;
+					
+
 					if(recSOx.getFieldValue('custbody_lmry_concepto_detraccion')!=12){
 						//FACTURA TIENE CONCEPTO DE DETRACCION DISTINTO A 'SIN DETRACCION'
-						notieneDetraccion = false;
+						hayDetra = false;
                       	
 						if(nlapiGetFieldValue('custbody_lmry_serie_retencion')!='' && nlapiGetFieldValue('custbody_lmry_serie_retencion')!=null ){
                          
-							alert('No se puede realizar pago de facturas con Retencion y Detraccion al mismo tiempo. Verifique la columna de Concepto de Detraccion.');
+							alert('No se puede realizar pago de facturas con Retencion y Detraccion al mismo tiempo. Verifique el campo serie de Retencion.');
 							return false;
+						}									
+					}else{
+						hayDetra = true;
 
-						}
-						//nlapiSetFieldValue('custbody_lmry_serie_retencion','');
-								
-								
+					}
+					if(hayDetra!=hayDetra_last){
+						alert('No se puede realizar pago de facturas con Retencion y Detraccion al mismo tiempo. Verifique la columna de Concepto de Detraccion.');	
+						return false;
 					}
                   
                   var tipoDocumento = recSOx.getFieldValue('custbody_lmry_document_type');
-
-                  var montofac = parseFloat(recSOx.getFieldValue('usertotal'));
+				  var tipoCambiofac = recSOx.getFieldValue('exchangerate');
+                  var montofac = parseFloat(recSOx.getFieldValue('usertotal'))*parseFloat(tipoCambiofac);
                   if(parseFloat(recSOx.getFieldValue('taxtotal'))>0){
 
                       montoTot=montoTot+montofac;
@@ -162,6 +183,8 @@ function beforeSubmitRetencion(){
                }  
 			}	
 		}
+		if(hayDetra){
+
 		var proveedor = nlapiGetFieldValue('entity');
 		var datosproveedor = nlapiLookupField('vendor', proveedor, [ 'custentity_lmry_es_agente_retencion', 'custentity_lmry_es_buen_contribuyente', 'custentity_lmry_es_agente_percepcion', 'country' ] );
 		if(datosproveedor==null){
@@ -175,7 +198,7 @@ function beforeSubmitRetencion(){
 
 		var tipoCambio = nlapiGetFieldValue('exchangerate');
 		var montoTotal = parseFloat(nlapiGetFieldValue('total'))*parseFloat(tipoCambio);
-		if(notieneDetraccion){
+		
 
 
 		
@@ -224,7 +247,8 @@ function beforeSubmitRetencion(){
 					var cantExpnx = recSOx.getLineItemCount('expense');
 					var tipoDocumento = recSOx.getFieldValue('custbody_lmry_document_type');
 					var valorRetenido = 0;
-					var montofactura = parseFloat(recSOx.getFieldValue('usertotal'));
+                    var tipoCambioFact = recSOx.getFieldValue('exchangerate');
+					var montofactura = parseFloat(recSOx.getFieldValue('usertotal'))*parseFloat(tipoCambioFact);
 
 					//Tabla LatamReady - Pe Retenciones
 					var filters = new Array();

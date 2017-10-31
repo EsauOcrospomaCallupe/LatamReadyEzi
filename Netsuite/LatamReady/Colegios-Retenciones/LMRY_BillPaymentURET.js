@@ -8,6 +8,7 @@
  */
 var LMRY_script = "LMRY Vendor Payment URET";
 //Declaracion de Variables
+
 var objContext = nlapiGetContext(); 
 var valorporc  = null;
 var WTHolding  = null;
@@ -24,6 +25,7 @@ var fechaObtenida = null;
 var auxiliarTieneDosTasas = '00';
 var numeroActual = null;
 var cantDigitos = null;
+var idValorActual = null;
 /**
  * The recordType (internal id) corresponds to the "Applied To" record in your script deployment. 
  * @appliedtorecord recordType
@@ -34,6 +36,7 @@ var cantDigitos = null;
  * @returns {Void}
  */
 function VPUret_BeforeLoad(type, form, request) {
+   
 	if ( type!='print' && type!='email' ) {
 		var LMRY_Result = ValidateAccess( nlapiGetFieldValue('subsidiary') );
 		if ( LMRY_Result[0]=='PE' && getAuthorization(1)==true && nlapiGetFieldValue('custbody_lmry_serie_retencion')!=null) 
@@ -58,6 +61,7 @@ function VPUret_BeforeLoad(type, form, request) {
 		if ( nlapiGetFieldValue('custbody_lmry_subsidiary_country')== '' ) {
 			nlapiDisableField( 'custbody_lmry_subsidiary_country', false);	
 		}
+     
 	}
 }
 
@@ -79,29 +83,89 @@ function VPUret_BeforeSubmit(type) {
 		if ( type=='delete' ) 
 		{
 			var LMRY_RecoID = nlapiGetRecordId();
+          	nlapiLogExecution('ERROR','ID ACTUAL',LMRY_RecoID);
 			var LMRY_Result = ValidateAccess( nlapiGetFieldValue('subsidiary') );
 
 			// Solo para Peru - Retenciones
 			if ( LMRY_Result[0]=='PE' && getAuthorization(1)==true ) {
 				var serieCompr = nlapiGetFieldValue('custbody_lmry_serie_retencion');
 				if ( serieCompr!=null && serieCompr!='' ){
-					//ELIMINANDO DATOS DEL TIPO DE REGISTRO
+					//RECUPERA EL VALOR ACTUAL
+                  	buscaCorrelativo(serieCompr);
+                  
+                  	//ELIMINANDO DATOS DEL TIPO DE REGISTRO
 					var columns = new Array();
 						columns[0] = new nlobjSearchColumn('internalid');
+    		            columns[1] = new nlobjSearchColumn('custrecord_lmry_comp_retencion');
 					var filters = new Array();
 						filters[0] = new nlobjSearchFilter('custrecord_lmry_pago_relacionado', null, 'anyof', LMRY_RecoID);
 		
 					var transacdata = nlapiSearchRecord('customrecord_lmry_comprobante_retencion', null, filters, columns);
-					if(transacdata!=null){
-						var longitud = transacdata.length;
-						for(var cuenta=0; cuenta<longitud; cuenta++){
-							var registro = nlapiLoadRecord('customrecord_lmry_comprobante_retencion', transacdata[cuenta].getValue('internalid'));
-								registro.setFieldValue('inactive',true);
-								registro.setFieldValue('isinactive','T');
-							nlapiSubmitRecord(registro);
-						}
-					}
-					
+                    nlapiLogExecution('ERROR', 'transacdata: ', transacdata);
+
+					nlapiLogExecution('ERROR','NUMERO ACTUAL DE LA SERIE',numeroActual);
+
+                    /*
+          			#######################################################
+                 		   MODIFICACACION REALIZADA EL DIA 10-08-2017
+          			#######################################################
+          			*/
+          			if (transacdata != null) {
+                        var longitud = transacdata.length;
+                        //NUMERO CORRELATIVO A ELIMINAR
+                        var numEliminado;
+                        nlapiLogExecution('ERROR', 'LA LONGITUD ES', longitud);
+
+                        for (var cuenta = 0; cuenta < longitud; cuenta++) {
+                          //numEliminado = nlapiLookupField('customrecord_lmry_comprobante_retencion',transacdata[cuenta].getValue('internalid'),'custrecord_lmry_comp_retencion');
+                          numEliminado = parseFloat(transacdata[cuenta].getValue('custrecord_lmry_comp_retencion'));
+
+                          nlapiLogExecution('ERROR', 'EL NUMERO A ELIMINAR SERA', numEliminado);
+
+                          //ELIMINACION POR EL ID INTERNO DE LA LISTA COMPROB RETENCION
+                          nlapiDeleteRecord('customrecord_lmry_comprobante_retencion', transacdata[cuenta].getValue('internalid'));
+
+                          nlapiLogExecution('ERROR', 'SE ELIMINO EL REGISTRO', 1);
+                        }
+
+                      //COMPARA SI EL NUMERO DE RETENCION A ELIMINAR ES EL ACTUAL
+                      if (numEliminado == numeroActual) {
+
+                        	//TRAE LOS VALORES DE LA BUSQUEDA DE LOS ULTIMOS 4 MESES
+                            var busqueda = nlapiLoadSearch('customrecord_lmry_comprobante_retencion', 'customsearch_lmry_ultimas_reten');
+                           		busqueda.addFilter(new nlobjSearchFilter('custrecord_lmry_serie_retencion', null, 'anyof',serieCompr ));
+                            var resultSet = busqueda.runSearch();
+                            var results = resultSet.getResults(0, 1000);
+
+                            if (results != null) {
+                                  nlapiLogExecution('ERROR','cantidad',results.length);
+                                  var bandera = true;
+                                  //ES EL NUEVO VALOR DEL NUMERO CORRELATIVO
+                                  var numeroCorrelativo;
+
+                                  //COMPARA ITERATIVAMENTE HASTA ENCONTRAR EL 1ER DISTINTO
+                                  for (var i = 0; bandera && i < results.length; i++) {
+                                    numeroCorrelativo = parseFloat(results[i].getValue('custrecord_lmry_comp_retencion'));
+                                    if (numeroCorrelativo != numEliminado) {
+                                      bandera = false;
+                                      nlapiLogExecution('ERROR', 'iteración', i)
+                                    }
+                                  }
+
+                                  nlapiLogExecution('ERROR', 'El nuevo valor del correlativo es: ', numeroCorrelativo);
+
+                                  var registroAux = nlapiLoadRecord('customrecord_lmry_serie_compro_retencion', idValorActual);
+                                  registroAux.setFieldValue('custrecord_lmry_valor_actual', numeroCorrelativo);
+
+                                  nlapiSubmitRecord(registroAux);
+                                  nlapiLogExecution('ERROR', 'SE CAMBIO EL REGISTRO AL NUMERO', numeroCorrelativo);
+                            }
+                        }
+                    }
+
+		            //######################################################
+
+
 					//QUITANDO VALORES DE RETENCION A LAS TRANSACCIONES APLICADAS
 					var cantAplic = nlapiGetLineItemCount('apply');
 					for(var cuentaDocAplicado=1; cuentaDocAplicado<=cantAplic; cuentaDocAplicado++){
@@ -429,7 +493,8 @@ function VPUret_AfterSubmit(type){
 					}
 				}
 			}		
-		}	
+		}
+
 	} catch(err){
 		sendemail(' [ VPUret_AfterSubmit ] ' +err, LMRY_script);
 		nlapiLogExecution('ERROR', 'error:' , err);
@@ -445,9 +510,10 @@ function VPUret_AfterSubmit(type){
  * 		- validaFecha
  * --------------------------------------------------------------------------------------------------- */
 function buscaCorrelativo(idSerie){
-	var seriecompret = nlapiLookupField('customrecord_lmry_serie_compro_retencion', idSerie, [ 'custrecord_lmry_valor_actual', 'custrecord_lmry_cant_digitos' ] );
+	var seriecompret = nlapiLookupField('customrecord_lmry_serie_compro_retencion', idSerie, [ 'custrecord_lmry_valor_actual', 'custrecord_lmry_cant_digitos','internalid' ] );
 	numeroActual = parseFloat(seriecompret.custrecord_lmry_valor_actual);
 	cantDigitos  = seriecompret.custrecord_lmry_cant_digitos;
+    idValorActual = seriecompret.internalid;
 }
 function asignaCorrelativo(valorCorrelativo){
 	var stringCorrelativo = valorCorrelativo+'';
@@ -586,6 +652,6 @@ function onClick(type,form){
 		// Internal ID
 		var recId = nlapiGetRecordId();		
 		form.addButton('custpage_Add', 'Imprimir Comp. Retencion',"onclick_event();");
-		form.setScript('customscript_lmry_retencionespagoclnt');
+		form.setScript('customscript_lmry_retencionespagoclnt_te');
 	 }
 }
